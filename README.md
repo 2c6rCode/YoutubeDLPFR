@@ -40,7 +40,13 @@ Go to the official yt-dlp repository:
 
 **https://github.com/yt-dlp/yt-dlp**
 
-Under the **Releases** section, download:
+and follow their instruction
 
-```text
+###HOW TO USE
+
+Download the .Zip file in the release 
+
+Extract it and open the folder
+
+Open Bin -> Debug -> net10.0Windows -> Yt-dlpGUI.exe
 
