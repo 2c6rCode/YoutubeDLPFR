@@ -85,41 +85,68 @@ public partial class QueueViewModel : BaseViewModel
 
         TotalActive = ActiveDownloads.Count;
         TotalQueued = QueuedDownloads.Count;
+        OnPropertyChanged(nameof(HasItems));
     }
 
+    public bool HasItems => TotalActive + TotalQueued > 0;
+
     [RelayCommand]
-    private async Task PauseSelectedAsync()
+    private async Task StartItemAsync(DownloadItem? item)
     {
-        if (SelectedItem != null && SelectedItem.CanPause)
+        var target = item ?? SelectedItem;
+        if (target != null)
         {
-            await _downloadService.PauseDownloadAsync(SelectedItem.Id);
+            await _downloadService.StartDownloadAsync(target.Id);
         }
     }
 
     [RelayCommand]
-    private async Task ResumeSelectedAsync()
+    private async Task PauseSelectedAsync(DownloadItem? item = null)
     {
-        if (SelectedItem != null && SelectedItem.CanResume)
+        var target = item ?? SelectedItem;
+        if (target != null && target.CanPause)
         {
-            await _downloadService.ResumeDownloadAsync(SelectedItem.Id);
+            await _downloadService.PauseDownloadAsync(target.Id);
         }
     }
 
     [RelayCommand]
-    private async Task CancelSelectedAsync()
+    private async Task ResumeSelectedAsync(DownloadItem? item = null)
     {
-        if (SelectedItem != null && SelectedItem.CanCancel)
+        var target = item ?? SelectedItem;
+        if (target != null && target.CanResume)
         {
-            await _downloadService.CancelDownloadAsync(SelectedItem.Id);
+            await _downloadService.ResumeDownloadAsync(target.Id);
         }
     }
 
     [RelayCommand]
-    private async Task RemoveSelectedAsync()
+    private async Task CancelSelectedAsync(DownloadItem? item = null)
     {
-        if (SelectedItem != null)
+        var target = item ?? SelectedItem;
+        if (target != null && target.CanCancel)
         {
-            await _downloadService.RemoveDownloadAsync(SelectedItem.Id);
+            await _downloadService.CancelDownloadAsync(target.Id);
+        }
+    }
+
+    [RelayCommand]
+    private async Task RetrySelectedAsync(DownloadItem? item = null)
+    {
+        var target = item ?? SelectedItem;
+        if (target != null && target.CanRetry)
+        {
+            await _downloadService.RetryDownloadAsync(target.Id);
+        }
+    }
+
+    [RelayCommand]
+    private async Task RemoveSelectedAsync(DownloadItem? item = null)
+    {
+        var target = item ?? SelectedItem;
+        if (target != null)
+        {
+            await _downloadService.RemoveDownloadAsync(target.Id);
         }
     }
 

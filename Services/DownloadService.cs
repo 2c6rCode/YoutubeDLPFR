@@ -11,6 +11,7 @@ public class DownloadService : IDownloadService
     private readonly IYtDlpService _ytDlpService;
     private readonly ISettingsService _settingsService;
     private readonly ConcurrentDictionary<string, DownloadItem> _downloads = new();
+    private readonly ConcurrentDictionary<string, CancellationTokenSource> _cancellationTokenSources = new();
     private SemaphoreSlim _downloadSemaphore;
     private readonly object _lock = new();
 
@@ -69,11 +70,13 @@ public class DownloadService : IDownloadService
         var item = new DownloadItem
         {
             Url = url,
+            Title = url,
             Status = DownloadStatus.Queued,
             Type = options?.Type ?? DownloadType.Video,
             Format = options?.Format ?? _settingsService.Settings.PreferredFormat,
             Quality = options?.Quality ?? _settingsService.Settings.PreferredQuality,
-            OutputPath = options?.OutputPath ?? _settingsService.Settings.DefaultDownloadPath
+            CustomArgs = options?.CustomArgs ?? string.Empty,
+            OutputPath = !string.IsNullOrWhiteSpace(options?.OutputPath) ? options.OutputPath : _settingsService.Settings.DefaultDownloadPath
         };
 
         _downloads.TryAdd(item.Id, item);
@@ -81,6 +84,27 @@ public class DownloadService : IDownloadService
         DownloadUpdated?.Invoke(this, item);
 
         _logger.LogInformation("Added download {Id} for URL: {Url}", item.Id, url);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var info = await _ytDlpService.ExtractInfoAsync(url, cancellationToken);
+                if (info != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(info.Title))
+                        item.Title = info.Title;
+                    if (!string.IsNullOrWhiteSpace(info.ThumbnailUrl))
+                        item.ThumbnailUrl = info.ThumbnailUrl;
+
+                    DownloadUpdated?.Invoke(this, item);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract metadata for {Url}", url);
+            }
+        }, cancellationToken);
 
         return item;
     }
@@ -90,24 +114,43 @@ public class DownloadService : IDownloadService
         if (!_downloads.TryGetValue(downloadId, out var item))
             return false;
 
-        if (item.Status != DownloadStatus.Queued && item.Status != DownloadStatus.Pending && item.Status != DownloadStatus.Paused)
+        if (item.Status != DownloadStatus.Queued && item.Status != DownloadStatus.Pending && item.Status != DownloadStatus.Paused && item.Status != DownloadStatus.Failed && item.Status != DownloadStatus.Cancelled)
             return false;
 
         item.Status = DownloadStatus.Queued;
         DownloadUpdated?.Invoke(this, item);
 
+        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _cancellationTokenSources[downloadId] = cts;
+
         _ = Task.Run(async () =>
         {
-            await _downloadSemaphore.WaitAsync(cancellationToken);
             try
             {
-                await ProcessDownloadAsync(item, cancellationToken);
+                await _downloadSemaphore.WaitAsync(cts.Token);
+                try
+                {
+                    await ProcessDownloadAsync(item, cts.Token);
+                }
+                finally
+                {
+                    _downloadSemaphore.Release();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (item.Status != DownloadStatus.Paused)
+                {
+                    item.Status = DownloadStatus.Cancelled;
+                }
+                DownloadUpdated?.Invoke(this, item);
             }
             finally
             {
-                _downloadSemaphore.Release();
+                _cancellationTokenSources.TryRemove(downloadId, out _);
+                cts.Dispose();
             }
-        }, cancellationToken);
+        }, cts.Token);
 
         return true;
     }
@@ -120,6 +163,13 @@ public class DownloadService : IDownloadService
             item.StartedAt = DateTime.Now;
             DownloadUpdated?.Invoke(this, item);
 
+            // Item-level CustomArgs (e.g. specific format id) takes priority; append global custom args after
+            var mergedCustomArgs = string.IsNullOrWhiteSpace(item.CustomArgs)
+                ? _settingsService.Settings.CustomArgs
+                : string.IsNullOrWhiteSpace(_settingsService.Settings.CustomArgs)
+                    ? item.CustomArgs
+                    : $"{item.CustomArgs} {_settingsService.Settings.CustomArgs}";
+
             var options = new DownloadOptions
             {
                 Type = item.Type,
@@ -130,11 +180,11 @@ public class DownloadService : IDownloadService
                 EmbedSubtitles = _settingsService.Settings.EmbedSubtitles,
                 EmbedThumbnail = _settingsService.Settings.EmbedThumbnail,
                 EmbedMetadata = _settingsService.Settings.EmbedMetadata,
-                CustomArgs = _settingsService.Settings.CustomArgs,
+                CustomArgs = mergedCustomArgs,
                 AudioQuality = _settingsService.Settings.AudioQuality,
                 KeepVideo = _settingsService.Settings.KeepVideo,
-                NoOverwrites = _settingsService.Settings.NoOverwrites,
-                ContinueIncomplete = _settingsService.Settings.ContinueIncomplete,
+                NoOverwrites = false, // always allow re-downloading the same video
+                ContinueIncomplete = item.Status == DownloadStatus.Paused && _settingsService.Settings.ContinueIncomplete,
                 SocketTimeout = _settingsService.Settings.SocketTimeout,
                 Proxy = _settingsService.Settings.Proxy,
                 Container = _settingsService.Settings.Container,
@@ -151,19 +201,22 @@ public class DownloadService : IDownloadService
 
             if (cancellationToken.IsCancellationRequested)
             {
-                item.Status = DownloadStatus.Cancelled;
+                if (item.Status != DownloadStatus.Paused)
+                {
+                    item.Status = DownloadStatus.Cancelled;
+                }
             }
             else if (result.Success)
             {
                 item.Status = DownloadStatus.Completed;
                 item.Progress = 100;
-                item.DownloadedBytes = item.TotalBytes;
+                item.DownloadedBytes = item.TotalBytes > 0 ? item.TotalBytes : item.DownloadedBytes;
                 item.CompletedAt = DateTime.Now;
             }
             else
             {
                 item.Status = DownloadStatus.Failed;
-                item.ErrorMessage = result.StandardError;
+                item.ErrorMessage = string.IsNullOrWhiteSpace(result.StandardError) ? "Download process failed." : result.StandardError;
                 item.RetryCount++;
             }
 
@@ -171,7 +224,10 @@ public class DownloadService : IDownloadService
         }
         catch (OperationCanceledException)
         {
-            item.Status = DownloadStatus.Cancelled;
+            if (item.Status != DownloadStatus.Paused)
+            {
+                item.Status = DownloadStatus.Cancelled;
+            }
             DownloadUpdated?.Invoke(this, item);
         }
         catch (Exception ex)
@@ -186,13 +242,22 @@ public class DownloadService : IDownloadService
 
     private void UpdateProgress(DownloadItem item, DownloadProgressEventArgs args)
     {
-        item.Progress = args.Progress;
-        item.DownloadedBytes = args.DownloadedBytes;
-        item.TotalBytes = args.TotalBytes;
-        item.SpeedBytesPerSecond = args.SpeedBytesPerSecond;
-        item.Eta = args.Eta;
+        if (args.Progress > 0)
+            item.Progress = args.Progress;
+
+        if (args.DownloadedBytes > 0)
+            item.DownloadedBytes = args.DownloadedBytes;
+
+        if (args.TotalBytes > 0)
+            item.TotalBytes = args.TotalBytes;
+
+        if (args.SpeedBytesPerSecond > 0)
+            item.SpeedBytesPerSecond = args.SpeedBytesPerSecond;
+
+        if (args.Eta > TimeSpan.Zero)
+            item.Eta = args.Eta;
         
-        if (args.Status != DownloadStatus.Downloading)
+        if (args.Status != DownloadStatus.Downloading && args.Status != DownloadStatus.Pending && args.Status != DownloadStatus.Queued)
             item.Status = args.Status;
 
         if (!string.IsNullOrEmpty(args.ErrorMessage))
@@ -211,6 +276,12 @@ public class DownloadService : IDownloadService
             return false;
 
         item.Status = DownloadStatus.Paused;
+
+        if (_cancellationTokenSources.TryGetValue(downloadId, out var cts))
+        {
+            try { cts.Cancel(); } catch { }
+        }
+
         DownloadUpdated?.Invoke(this, item);
         return true;
     }
@@ -229,6 +300,12 @@ public class DownloadService : IDownloadService
             return false;
 
         item.Status = DownloadStatus.Cancelled;
+
+        if (_cancellationTokenSources.TryGetValue(downloadId, out var cts))
+        {
+            try { cts.Cancel(); } catch { }
+        }
+
         DownloadUpdated?.Invoke(this, item);
         return true;
     }
@@ -254,6 +331,11 @@ public class DownloadService : IDownloadService
 
     public async Task<bool> RemoveDownloadAsync(string downloadId, CancellationToken cancellationToken = default)
     {
+        if (_cancellationTokenSources.TryGetValue(downloadId, out var cts))
+        {
+            try { cts.Cancel(); } catch { }
+        }
+
         if (!_downloads.TryRemove(downloadId, out var item))
             return false;
 
@@ -273,6 +355,11 @@ public class DownloadService : IDownloadService
 
     public async Task ClearAllAsync(CancellationToken cancellationToken = default)
     {
+        foreach (var kvp in _cancellationTokenSources)
+        {
+            try { kvp.Value.Cancel(); } catch { }
+        }
+
         var all = _downloads.Values.ToList();
         foreach (var item in all)
         {

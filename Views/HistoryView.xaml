@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
     <Grid>
-        <controls:ModernCard Padding="0">
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -15,12 +15,95 @@
                 </Grid.RowDefinitions>
                 
                 <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,15">
-                    <TextBlock Text="Download History" FontSize="18" FontWeight="SemiBold"/>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Download History" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                            <Border Background="{DynamicResource SuccessBrush}" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding TotalCompleted, StringFormat='{}{0} completed'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <Border Background="{DynamicResource ErrorBrush}" CornerRadius="10" Padding="8,2">
+                                <TextBlock Text="{Binding TotalFailed, StringFormat='{}{0} failed'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+
+                        <Button Content="Clear History" Command="{Binding ClearHistoryCommand}" 
+                                HorizontalAlignment="Right" Padding="12,4" Height="30"
+                                Background="{DynamicResource SurfaceHoverBrush}"
+                                Foreground="{DynamicResource TextPrimaryBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                Cursor="Hand"/>
+                    </Grid>
                 </Border>
                 
+                <!-- History Items -->
+                <ListBox Grid.Row="1" ItemsSource="{Binding HistoryItems}" SelectedItem="{Binding SelectedItem}"
+                         Background="Transparent" BorderThickness="0" Margin="10"
+                         Visibility="{Binding HasHistory, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0,0,0,8"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Thumbnail -->
+                                    <Border Grid.Column="0" Width="110" Height="62" CornerRadius="4" Background="{DynamicResource BackgroundBrush}" Margin="0,0,12,0" ClipToBounds="True">
+                                        <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <!-- Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding FormattedDownloaded, StringFormat='Size: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding CompletedAt, StringFormat='Completed: {0:g}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                   Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    </StackPanel>
+
+                                    <!-- Actions -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <Button Content="📁 Open" Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="8,0" Margin="0,0,5,0" Cursor="Hand"/>
+                                        <Button Content="Retry" Command="{Binding DataContext.RetrySelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Visibility="{Binding CanRetry, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Height="28" Padding="8,0" Margin="0,0,5,0" Cursor="Hand"/>
+                                        <Button Content="✕" Command="{Binding DataContext.RemoveSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" Height="28" Width="28" Padding="0" Cursor="Hand"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
                 <TextBlock Grid.Row="1" Text="History is empty" Foreground="{DynamicResource TextMutedBrush}" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
+                           Visibility="{Binding HasHistory, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
             </Grid>
-        </controls:ModernCard>
+        </Border>
     </Grid>
 </UserControl>

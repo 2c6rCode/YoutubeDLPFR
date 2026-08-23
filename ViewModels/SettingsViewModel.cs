@@ -140,6 +140,33 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task UpdateYtDlpSelfAsync()
+    {
+        IsCheckingUpdates = true;
+        UpdateStatus = "Updating yt-dlp (running yt-dlp -U)...";
+
+        try
+        {
+            var result = await _ytDlpService.UpdateSelfAsync();
+            var output = !string.IsNullOrWhiteSpace(result.StandardOutput) 
+                ? result.StandardOutput.Trim() 
+                : (!string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardError.Trim() : "Update completed.");
+            
+            UpdateStatus = output;
+            await LoadYtDlpVersionAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update yt-dlp");
+            UpdateStatus = $"Update error: {ex.Message}";
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+        }
+    }
+
+    [RelayCommand]
     private async Task AutoDetectYtDlpAsync()
     {
         IsBusy = true;

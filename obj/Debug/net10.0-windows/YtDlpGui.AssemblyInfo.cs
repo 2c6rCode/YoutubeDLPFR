@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright © 2024")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Professional GUI frontend for yt-dlp")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2457e041fbf912138c70a3c03cffdcf5ec36ec21")]
 [assembly: System.Reflection.AssemblyProductAttribute("YtDlpGui")]
 [assembly: System.Reflection.AssemblyTitleAttribute("YtDlpGui")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

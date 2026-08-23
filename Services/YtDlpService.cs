@@ -31,7 +31,34 @@ public class YtDlpService : IYtDlpService
         if (!string.IsNullOrWhiteSpace(settings.YtDlpPath) && File.Exists(settings.YtDlpPath))
         {
             _executablePath = settings.YtDlpPath;
+            return;
         }
+
+        var appDir = AppDomain.CurrentDomain.BaseDirectory;
+        var localExe = Path.Combine(appDir, "yt-dlp.exe");
+        if (File.Exists(localExe))
+        {
+            _executablePath = localExe;
+            return;
+        }
+
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        var pathDirs = pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var dir in pathDirs)
+        {
+            try
+            {
+                var candidate = Path.Combine(dir, "yt-dlp.exe");
+                if (File.Exists(candidate))
+                {
+                    _executablePath = candidate;
+                    return;
+                }
+            }
+            catch { }
+        }
+
+        _executablePath = "yt-dlp";
     }
 
     private void OnSettingsChanged(object? sender, SettingsChangedEventArgs e)
@@ -157,26 +184,162 @@ public class YtDlpService : IYtDlpService
         }
     }
 
-    public async Task<VideoInfo?> ExtractInfoAsync(string url, CancellationToken cancellationToken = default)
+    public async Task<ProcessResult> UpdateSelfAsync(CancellationToken cancellationToken = default)
     {
-        var args = $"--dump-json --no-download \"{url}\"";
+        return await ExecuteAsync("-U", cancellationToken);
+    }
+
+    public async Task<MediaAnalysisResult> AnalyzeUrlAsync(string url, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return new MediaAnalysisResult
+            {
+                Success = false,
+                ErrorMessage = "URL cannot be empty."
+            };
+        }
+
+        var args = new List<string>
+        {
+            "--dump-json",
+            "--no-playlist",
+            "--extractor-args",
+            "youtube:player_client=web,default",
+            url
+        };
+
         var result = await ExecuteAsync(args, cancellationToken);
-        
+
         if (!result.Success || string.IsNullOrWhiteSpace(result.StandardOutput))
-            return null;
+        {
+            var err = CleanYtDlpErrorMessage(result.StandardError);
+            return new MediaAnalysisResult
+            {
+                Success = false,
+                ErrorMessage = !string.IsNullOrWhiteSpace(err) ? err : "Failed to retrieve media information."
+            };
+        }
 
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<VideoInfo>(result.StandardOutput, new JsonSerializerOptions
+            var jsonOptions = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
-            });
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString | System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
+            };
+
+            var videoInfo = JsonSerializer.Deserialize<VideoInfo>(result.StandardOutput, jsonOptions);
+
+            // Fallback manual JsonDocument parse if Deserializer missed essential fields
+            if (videoInfo != null && string.IsNullOrEmpty(videoInfo.Title))
+            {
+                using var doc = JsonDocument.Parse(result.StandardOutput);
+                var root = doc.RootElement;
+
+                videoInfo.Title = root.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? "" : "";
+                videoInfo.Uploader = root.TryGetProperty("uploader", out var upProp) ? upProp.GetString() ?? "" : "";
+                videoInfo.Channel = root.TryGetProperty("channel", out var chProp) ? chProp.GetString() ?? "" : "";
+                videoInfo.ThumbnailUrl = root.TryGetProperty("thumbnail", out var thumbProp) ? thumbProp.GetString() ?? "" : "";
+                if (root.TryGetProperty("duration", out var durProp) && durProp.TryGetDouble(out var durVal))
+                    videoInfo.DurationSeconds = durVal;
+                if (root.TryGetProperty("view_count", out var vcProp) && vcProp.TryGetDouble(out var vcVal))
+                    videoInfo.ViewCount = vcVal;
+                if (root.TryGetProperty("upload_date", out var udProp))
+                    videoInfo.UploadDateRaw = udProp.GetString();
+            }
+
+            if (videoInfo == null)
+            {
+                return new MediaAnalysisResult
+                {
+                    Success = false,
+                    ErrorMessage = "Failed to parse metadata."
+                };
+            }
+
+            return new MediaAnalysisResult
+            {
+                Success = true,
+                Info = videoInfo
+            };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to parse video info for {Url}", url);
-            return null;
+
+            // Resilient emergency JsonDocument extraction
+            try
+            {
+                using var doc = JsonDocument.Parse(result.StandardOutput);
+                var root = doc.RootElement;
+                var fallbackInfo = new VideoInfo
+                {
+                    Title = root.TryGetProperty("title", out var titleProp) ? titleProp.GetString() ?? "Unknown Title" : "Unknown Title",
+                    Uploader = root.TryGetProperty("uploader", out var upProp) ? upProp.GetString() ?? "" : "",
+                    Channel = root.TryGetProperty("channel", out var chProp) ? chProp.GetString() ?? "" : "",
+                    ThumbnailUrl = root.TryGetProperty("thumbnail", out var thumbProp) ? thumbProp.GetString() ?? "" : "",
+                    UploadDateRaw = root.TryGetProperty("upload_date", out var udProp) ? udProp.GetString() : null
+                };
+                if (root.TryGetProperty("duration", out var durProp) && durProp.TryGetDouble(out var durVal))
+                    fallbackInfo.DurationSeconds = durVal;
+                if (root.TryGetProperty("view_count", out var vcProp) && vcProp.TryGetDouble(out var vcVal))
+                    fallbackInfo.ViewCount = vcVal;
+
+                return new MediaAnalysisResult
+                {
+                    Success = true,
+                    Info = fallbackInfo
+                };
+            }
+            catch
+            {
+                return new MediaAnalysisResult
+                {
+                    Success = false,
+                    ErrorMessage = "Received invalid metadata format from yt-dlp."
+                };
+            }
         }
+    }
+
+    private static string CleanYtDlpErrorMessage(string stderr)
+    {
+        if (string.IsNullOrWhiteSpace(stderr))
+            return "An unknown error occurred while analyzing the media.";
+
+        var lines = stderr.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        var relevantErrors = lines
+            .Where(l => l.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+            .Select(l => l.Substring(6).Trim())
+            .ToList();
+
+        if (relevantErrors.Count > 0)
+        {
+            var joined = string.Join("\n", relevantErrors);
+            if (joined.Contains("Unsupported URL", StringComparison.OrdinalIgnoreCase))
+                return "Unsupported URL or website.";
+            if (joined.Contains("Private video", StringComparison.OrdinalIgnoreCase))
+                return "This video is private.";
+            if (joined.Contains("Sign in to confirm", StringComparison.OrdinalIgnoreCase) || joined.Contains("requires authentication", StringComparison.OrdinalIgnoreCase))
+                return "This video requires authentication or login.";
+            if (joined.Contains("Video unavailable", StringComparison.OrdinalIgnoreCase) || joined.Contains("deleted", StringComparison.OrdinalIgnoreCase))
+                return "This video is unavailable or has been deleted.";
+            if (joined.Contains("HTTP Error 403", StringComparison.OrdinalIgnoreCase))
+                return "Access forbidden (HTTP 403). The site blocked the request.";
+            if (joined.Contains("Unable to download webpage", StringComparison.OrdinalIgnoreCase) || joined.Contains("Network is unreachable", StringComparison.OrdinalIgnoreCase) || joined.Contains("Connection refused", StringComparison.OrdinalIgnoreCase))
+                return "Network failure: Unable to reach the host.";
+
+            return joined;
+        }
+
+        return lines.LastOrDefault() ?? "Failed to inspect media.";
+    }
+
+    public async Task<VideoInfo?> ExtractInfoAsync(string url, CancellationToken cancellationToken = default)
+    {
+        var result = await AnalyzeUrlAsync(url, cancellationToken);
+        return result.Info;
     }
 
     public async Task<ProcessResult> ExecuteAsync(string arguments, CancellationToken cancellationToken = default, IProgress<DownloadProgressEventArgs>? progress = null)
@@ -197,53 +360,7 @@ public class YtDlpService : IYtDlpService
                 StandardErrorEncoding = Encoding.UTF8
             };
 
-            using var process = new Process { StartInfo = startInfo };
-            
-            // Ensure process is killed if cancelled
-            using var ctr = cancellationToken.Register(() => 
-            {
-                try { if (!process.HasExited) process.Kill(true); } catch { }
-            });
-
-            var outputBuilder = new StringBuilder();
-            var errorBuilder = new StringBuilder();
-
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    outputBuilder.AppendLine(e.Data);
-                    OutputReceived?.Invoke(this, e.Data);
-                    
-                    if (progress != null && e.Data.StartsWith("PROGRESS:"))
-                    {
-                        ParseProgress(e.Data, progress);
-                    }
-                }
-            };
-
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    errorBuilder.AppendLine(e.Data);
-                    ErrorReceived?.Invoke(this, e.Data);
-                }
-            };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            await process.WaitForExitAsync(cancellationToken);
-
-            return new ProcessResult
-            {
-                ExitCode = process.ExitCode,
-                StandardOutput = outputBuilder.ToString(),
-                StandardError = errorBuilder.ToString(),
-                ElapsedTime = DateTime.Now - startTime
-            };
+            return await RunProcessInternalAsync(startInfo, startTime, cancellationToken, progress);
         }
         catch (OperationCanceledException)
         {
@@ -266,37 +383,168 @@ public class YtDlpService : IYtDlpService
         }
     }
 
-    private void ParseProgress(string data, IProgress<DownloadProgressEventArgs> progress)
+    public async Task<ProcessResult> ExecuteAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken = default, IProgress<DownloadProgressEventArgs>? progress = null)
+    {
+        var startTime = DateTime.Now;
+        
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _executablePath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            foreach (var arg in arguments)
+            {
+                startInfo.ArgumentList.Add(arg);
+            }
+
+            return await RunProcessInternalAsync(startInfo, startTime, cancellationToken, progress);
+        }
+        catch (OperationCanceledException)
+        {
+            return new ProcessResult
+            {
+                ExitCode = -1,
+                StandardError = "Operation cancelled",
+                ElapsedTime = DateTime.Now - startTime
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to execute yt-dlp with argument list");
+            return new ProcessResult
+            {
+                ExitCode = -1,
+                StandardError = ex.Message,
+                ElapsedTime = DateTime.Now - startTime
+            };
+        }
+    }
+
+    private async Task<ProcessResult> RunProcessInternalAsync(ProcessStartInfo startInfo, DateTime startTime, CancellationToken cancellationToken, IProgress<DownloadProgressEventArgs>? progress)
+    {
+        using var process = new Process { StartInfo = startInfo };
+        
+        using var ctr = cancellationToken.Register(() => 
+        {
+            try { if (!process.HasExited) process.Kill(true); } catch { }
+        });
+
+        var outputBuilder = new StringBuilder();
+        var errorBuilder = new StringBuilder();
+
+        process.Start();
+
+        var outputTask = ReadStreamAsync(process.StandardOutput, outputBuilder, data => 
+        {
+            OutputReceived?.Invoke(this, data);
+            if (progress != null)
+            {
+                ParseOutputLine(data, progress);
+            }
+        }, cancellationToken);
+
+        var errorTask = ReadStreamAsync(process.StandardError, errorBuilder, data => 
+        {
+            ErrorReceived?.Invoke(this, data);
+        }, cancellationToken);
+
+        await process.WaitForExitAsync(cancellationToken);
+        await Task.WhenAll(outputTask, errorTask);
+
+        return new ProcessResult
+        {
+            ExitCode = process.ExitCode,
+            StandardOutput = outputBuilder.ToString(),
+            StandardError = errorBuilder.ToString(),
+            ElapsedTime = DateTime.Now - startTime
+        };
+    }
+
+    private async Task ReadStreamAsync(StreamReader reader, StringBuilder builder, Action<string> onLineRead, CancellationToken cancellationToken)
     {
         try
         {
-            // Format: PROGRESS:downloaded_bytes|total_bytes|speed|eta
-            var parts = data.Substring(9).Split('|');
-            if (parts.Length >= 4)
+            string? line;
+            while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
             {
-                var args = new DownloadProgressEventArgs
+                builder.AppendLine(line);
+                onLineRead(line);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception) { }
+    }
+
+    private void ParseOutputLine(string data, IProgress<DownloadProgressEventArgs> progress)
+    {
+        try
+        {
+            if (data.StartsWith("PROGRESS:"))
+            {
+                var parts = data.Substring(9).Split('|');
+                if (parts.Length >= 4)
                 {
-                    Status = DownloadStatus.Downloading
-                };
+                    var args = new DownloadProgressEventArgs
+                    {
+                        Status = DownloadStatus.Downloading
+                    };
 
-                if (long.TryParse(parts[0], out var downloaded))
-                    args.DownloadedBytes = downloaded;
+                    if (long.TryParse(parts[0], out var downloaded))
+                        args.DownloadedBytes = downloaded;
 
-                if (long.TryParse(parts[1], out var total))
-                    args.TotalBytes = total;
-                else if (long.TryParse(parts[1].Replace("~", ""), out var estTotal)) // Sometimes it's ~1000
-                    args.TotalBytes = estTotal;
+                    if (long.TryParse(parts[1], out var total))
+                        args.TotalBytes = total;
+                    else if (long.TryParse(parts[1].Replace("~", ""), out var estTotal))
+                        args.TotalBytes = estTotal;
 
-                if (double.TryParse(parts[2], out var speed))
-                    args.SpeedBytesPerSecond = speed;
+                    if (double.TryParse(parts[2], out var speed))
+                        args.SpeedBytesPerSecond = speed;
 
-                if (int.TryParse(parts[3], out var etaSeconds))
-                    args.Eta = TimeSpan.FromSeconds(etaSeconds);
+                    if (int.TryParse(parts[3], out var etaSeconds))
+                        args.Eta = TimeSpan.FromSeconds(etaSeconds);
 
-                if (args.TotalBytes > 0)
-                    args.Progress = (double)args.DownloadedBytes / args.TotalBytes * 100.0;
+                    if (args.TotalBytes > 0)
+                        args.Progress = (double)args.DownloadedBytes / args.TotalBytes * 100.0;
 
-                progress.Report(args);
+                    progress.Report(args);
+                }
+                return;
+            }
+
+            if (data.Contains("[Merger]") || data.Contains("Merging formats"))
+            {
+                progress.Report(new DownloadProgressEventArgs { Status = DownloadStatus.Merging });
+                return;
+            }
+
+            if (data.Contains("[ExtractAudio]") || data.Contains("[Fixup") || data.Contains("[EmbedThumbnail]"))
+            {
+                progress.Report(new DownloadProgressEventArgs { Status = DownloadStatus.PostProcessing });
+                return;
+            }
+
+            if (data.StartsWith("[download]") && data.Contains("%"))
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    data,
+                    @"\[download\]\s+(\d+(?:\.\d+)?)%");
+
+                if (match.Success && double.TryParse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                {
+                    progress.Report(new DownloadProgressEventArgs
+                    {
+                        Status = DownloadStatus.Downloading,
+                        Progress = pct
+                    });
+                }
             }
         }
         catch (Exception ex)
@@ -307,13 +555,17 @@ public class YtDlpService : IYtDlpService
 
     public async Task<ProcessResult> DownloadAsync(string url, DownloadOptions options, CancellationToken cancellationToken = default, IProgress<DownloadProgressEventArgs>? progress = null)
     {
-        var args = BuildDownloadArguments(url, options);
+        var args = BuildDownloadArgumentList(url, options);
         return await ExecuteAsync(args, cancellationToken, progress);
     }
 
-    private string BuildDownloadArguments(string url, DownloadOptions options)
+    private List<string> BuildDownloadArgumentList(string url, DownloadOptions options)
     {
         var args = new List<string>();
+
+        // skip format/quality args when CustomArgs already contains -f (e.g. from Inspect panel)
+        bool customArgsHasFormat = !string.IsNullOrEmpty(options.CustomArgs) &&
+            System.Text.RegularExpressions.Regex.IsMatch(options.CustomArgs, @"(^|\s)-f(\s|$)");
 
         if (options.Type == DownloadType.Audio)
         {
@@ -323,16 +575,25 @@ public class YtDlpService : IYtDlpService
             args.Add("--audio-quality");
             args.Add(options.AudioQuality ?? "0");
         }
-        else
+        else if (!customArgsHasFormat)
         {
             var format = options.Format ?? "bestvideo+bestaudio/best";
+            bool isMp4 = options.Format == "mp4";
+
             if (!string.IsNullOrEmpty(options.Quality) && options.Quality != "best")
             {
-                format = $"bestvideo[height<={options.Quality}]+bestaudio/best[height<={options.Quality}]";
+                if (isMp4)
+                    format = $"bestvideo[ext=mp4][height<={options.Quality}]+bestaudio[ext=m4a]/best[ext=mp4][height<={options.Quality}]/best";
+                else
+                    format = $"bestvideo[height<={options.Quality}]+bestaudio/best[height<={options.Quality}]";
+            }
+            else if (isMp4)
+            {
+                format = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best";
             }
             args.Add("-f");
             args.Add(format);
-            
+
             if (options.KeepVideo)
                 args.Add("--keep-video");
         }
@@ -340,8 +601,15 @@ public class YtDlpService : IYtDlpService
         if (!string.IsNullOrEmpty(options.OutputPath))
         {
             args.Add("-o");
-            args.Add(Path.Combine(options.OutputPath, "%(title)s.%(ext)s"));
+            // include quality in filename so different quality downloads don't collide
+            var qualitySuffix = (!string.IsNullOrEmpty(options.Quality) && options.Quality != "best")
+                ? $".{options.Quality}p"
+                : string.Empty;
+            args.Add(Path.Combine(options.OutputPath, $"%(title)s{qualitySuffix}.%(ext)s"));
         }
+
+        // always overwrite so re-downloading at a different quality replaces the old file
+        args.Add("--force-overwrites");
 
         if (options.DownloadSubtitles)
         {
@@ -359,9 +627,6 @@ public class YtDlpService : IYtDlpService
 
         if (options.EmbedMetadata)
             args.Add("--embed-metadata");
-
-        if (options.NoOverwrites)
-            args.Add("--no-overwrites");
 
         if (options.ContinueIncomplete)
             args.Add("--continue");
@@ -397,19 +662,34 @@ public class YtDlpService : IYtDlpService
         if (!string.IsNullOrEmpty(options.Cookies))
         {
             args.Add("--cookies");
-            args.Add($"\"{options.Cookies}\"");
+            args.Add(options.Cookies);
         }
 
         if (!string.IsNullOrEmpty(options.CustomArgs))
         {
-            args.Add(options.CustomArgs);
+            // Simple split by space, but respect quotes
+            var parts = System.Text.RegularExpressions.Regex.Matches(options.CustomArgs, @"[""].+?[""]|[^ ]+")
+                .Cast<System.Text.RegularExpressions.Match>()
+                .Select(m => m.Value.Trim('"'))
+                .ToList();
+            foreach (var part in parts)
+            {
+                args.Add(part);
+            }
+        }
+
+        // Add default extractor args to bypass PO-Token if not already provided
+        if (string.IsNullOrEmpty(options.CustomArgs) || !options.CustomArgs.Contains("--extractor-args"))
+        {
+            args.Add("--extractor-args");
+            args.Add("youtube:player_client=web,default");
         }
 
         args.Add("--newline");
         args.Add("--progress-template");
-        args.Add("\"PROGRESS:%(progress.downloaded_bytes)s|%(progress.total_bytes)s|%(progress.speed)s|%(progress.eta)s\"");
-        args.Add("\"{url}\"");
+        args.Add("PROGRESS:%(progress.downloaded_bytes)s|%(progress.total_bytes,progress.total_bytes_estimate)s|%(progress.speed)s|%(progress.eta)s");
+        args.Add(url);
 
-        return string.Join(" ", args);
+        return args;
     }
 }

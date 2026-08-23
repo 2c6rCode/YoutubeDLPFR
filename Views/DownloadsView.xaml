@@ -5,54 +5,279 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:YtDlpGui.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="700" d:DesignWidth="900"
+             FontFamily="Segoe UI">
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Input Area -->
-        <controls:ModernCard Grid.Row="0" Margin="0,0,0,20" Padding="20">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBox Grid.Column="0" Text="{Binding UrlInput, UpdateSourceTrigger=PropertyChanged}" 
-                         Height="40" FontSize="16" Padding="10,0" VerticalContentAlignment="Center"
-                         Tag="Enter video or playlist URL..."/>
-                
-                <Button Grid.Column="1" Content="Add to Queue" Command="{Binding AddToQueueCommand}" 
-                        Margin="10,0,0,0" Width="120" Height="40" />
-                
-                <Button Grid.Column="2" Content="Download" Command="{Binding DownloadCommand}" 
-                        Margin="10,0,0,0" Width="120" Height="40" />
-            </Grid>
-        </controls:ModernCard>
+        <!-- Input & Options Card -->
+        <Border Grid.Row="0" Margin="0,0,0,20" Padding="20"
+                Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
+            <StackPanel>
+                <!-- URL Input and Main Action Buttons -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Height="44" Padding="12,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="&#xE71B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="15" Foreground="{DynamicResource TextMutedBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding UrlInput, UpdateSourceTrigger=PropertyChanged}" 
+                                     FontSize="14" VerticalContentAlignment="Center"
+                                     Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
+                                     BorderThickness="0"
+                                     ToolTip="Paste video or playlist URL here"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Analyze / Inspect Button -->
+                    <Button Grid.Column="1" Command="{Binding AnalyzeCommand}" 
+                            Margin="10,0,0,0" Width="104" Height="44" Cursor="Hand"
+                            Background="{DynamicResource Surface2Brush}"
+                            Foreground="{DynamicResource TextPrimaryBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Inspect"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAnalyzing}" Value="True">
+                                                <Setter Property="Text" Value="Analyzing..."/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
 
-        <!-- Downloads List -->
-        <controls:ModernCard Grid.Row="1" Padding="0">
+                    <!-- Add to Queue -->
+                    <Button Grid.Column="2" Command="{Binding AddToQueueCommand}" 
+                            Margin="10,0,0,0" Width="120" Height="44" Cursor="Hand"
+                            Background="{DynamicResource Surface2Brush}"
+                            Foreground="{DynamicResource TextPrimaryBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE710;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Add Queue" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Download Now -->
+                    <Button Grid.Column="3" Command="{Binding DownloadCommand}" 
+                            Margin="10,0,0,0" Width="130" Height="44" Cursor="Hand"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Foreground="{DynamicResource TextOnPrimaryBrush}"
+                            BorderThickness="0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Download" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- Options Row: Type, Format, Quality, Output Directory -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Type Radio Buttons -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <TextBlock Text="Type" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <RadioButton Content="Video" IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Video}" 
+                                     Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <RadioButton Content="Audio" IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Audio}" 
+                                     Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Format ComboBox -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <TextBlock Text="Format" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding SelectedFormat}" 
+                                  Width="96" Height="32" FontSize="13" VerticalContentAlignment="Center"
+                                  Background="{DynamicResource InputBackgroundBrush}"
+                                  Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <!-- Quality ComboBox -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <TextBlock Text="Quality" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox ItemsSource="{Binding AvailableQualities}" SelectedItem="{Binding SelectedQuality}" 
+                                  Width="110" Height="32" FontSize="13" VerticalContentAlignment="Center"
+                                  Background="{DynamicResource InputBackgroundBrush}"
+                                  Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <!-- Save Directory -->
+                    <Border Grid.Column="3" Background="{DynamicResource InputBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="6" Height="32" Padding="8,0" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="12" VerticalContentAlignment="Center"
+                                 Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
+                                 BorderThickness="0" ToolTip="Destination folder"/>
+                    </Border>
+
+                    <Button Grid.Column="4" Content="Browse" Command="{Binding BrowseFolderCommand}" 
+                            Height="32" Width="76" FontSize="12" VerticalAlignment="Center"
+                            Background="{DynamicResource Surface2Brush}"
+                            Foreground="{DynamicResource TextPrimaryBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" Cursor="Hand"/>
+                </Grid>
+
+                <!-- Clean Media Inspection Banner (Format Dropdowns Removed) -->
+                <Border Margin="0,16,0,0" Padding="16" Background="{DynamicResource Surface2Brush}" 
+                        BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10"
+                        Visibility="{Binding InspectedMedia, Converter={StaticResource NullToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Thumbnail -->
+                        <Border Grid.Column="0" CornerRadius="8" ClipToBounds="True" Height="84" Background="{DynamicResource BackgroundBrush}">
+                            <Image Source="{Binding InspectedMedia.ThumbnailUrl}" Stretch="UniformToFill"/>
+                        </Border>
+
+                        <!-- Video Metadata Details -->
+                        <StackPanel Grid.Column="1" Margin="16,0,16,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding InspectedMedia.Title}" FontSize="15" FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,0,0,6"/>
+                            
+                            <WrapPanel Margin="0,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
+                                    <TextBlock Text="&#xE77B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding InspectedMedia.DisplayUploader}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
+                                    <TextBlock Text="&#xE8B0;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding InspectedMedia.FormattedViewCount, StringFormat='{}{0} views'}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding InspectedMedia.FormattedUploadDate}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="&#xE916;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding InspectedMedia.DurationTimeSpan, Converter={StaticResource TimeSpanConverter}}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <!-- Dismiss / Clear -->
+                        <Button Grid.Column="2" Content="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                Command="{Binding ClearInspectionCommand}"
+                                Width="28" Height="28" FontSize="12"
+                                Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"
+                                BorderThickness="0" VerticalAlignment="Top" Cursor="Hand" ToolTip="Dismiss analysis"/>
+                    </Grid>
+                </Border>
+
+                <!-- Error Message -->
+                <Border Margin="0,15,0,0" Padding="12" Background="#33EF4444" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6"
+                        Visibility="{Binding AnalysisErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE783;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding AnalysisErrorMessage}" Foreground="#EF4444" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Downloads & Queue Card -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,15">
+                <!-- Card Header with Actions -->
+                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="15,10">
                     <Grid>
-                        <TextBlock Text="Active Downloads" FontSize="18" FontWeight="SemiBold"/>
-                        <Button Content="Clear Completed" Command="{Binding ClearCompletedCommand}" 
-                                HorizontalAlignment="Right" />
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Downloads" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding ActiveDownloads.Count, StringFormat='{}{0} total'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextOnPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Start All Queued" Command="{Binding StartDownloadsCommand}" 
+                                    Margin="0,0,8,0" Padding="12,4" Height="30"
+                                    Background="{DynamicResource SurfaceHoverBrush}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    Cursor="Hand"/>
+                            <Button Content="Clear Completed" Command="{Binding ClearCompletedCommand}" 
+                                    Margin="0,0,8,0" Padding="12,4" Height="30"
+                                    Background="{DynamicResource SurfaceHoverBrush}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    Cursor="Hand"/>
+                            <Button Content="Clear All" Command="{Binding ClearQueueCommand}" 
+                                    Padding="12,4" Height="30"
+                                    Background="{DynamicResource SurfaceHoverBrush}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    Cursor="Hand"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
                 
-                <ListBox Grid.Row="1" ItemsSource="{Binding ActiveDownloads}" Background="Transparent" BorderThickness="0" Margin="10">
+                <!-- Downloads List -->
+                <ListBox Grid.Row="1" ItemsSource="{Binding ActiveDownloads}" SelectedItem="{Binding SelectedItem}"
+                         Background="Transparent" BorderThickness="0" Margin="10"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0,0,0,8"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="8" Margin="0,0,0,10" Padding="15">
+                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -60,24 +285,88 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <Border Grid.Column="0" Width="120" Height="68" CornerRadius="4" Background="{DynamicResource BorderBrush}" Margin="0,0,15,0">
-                                        <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
+                                    <!-- Thumbnail -->
+                                    <Border Grid.Column="0" Width="130" Height="75" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" Margin="0,0,15,0" ClipToBounds="True">
+                                        <Grid>
+                                            <TextBlock Text="🎬" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
+                                            <!-- Format & Type Badge -->
+                                            <Border Background="#CC000000" CornerRadius="3" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4">
+                                                <TextBlock Text="{Binding Format}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                        </Grid>
                                     </Border>
                                     
+                                    <!-- Details & Progress -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,0,5"/>
-                                        <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
-                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="4" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}"/>
-                                        <Grid Margin="0,5,0,0">
-                                            <TextBlock Text="{Binding FormattedProgress}" HorizontalAlignment="Left" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
-                                            <TextBlock Text="{Binding FormattedSpeed}" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
-                                            <TextBlock Text="{Binding FormattedEta}" HorizontalAlignment="Right" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                        
+                                        <!-- Status Badge & Meta -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Quality, StringFormat='Quality: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                       Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Progress Bar -->
+                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="6" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}" BorderThickness="0" Margin="0,0,0,6"/>
+                                        
+                                        <!-- Metrics Row: Percentage, Size, Speed, ETA -->
+                                        <Grid>
+                                            <TextBlock Text="{Binding FormattedProgress}" HorizontalAlignment="Left" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding FormattedSize}" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <TextBlock Text="{Binding FormattedSpeed}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,15,0"/>
+                                                <TextBlock Text="{Binding FormattedEta, StringFormat='ETA: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                            </StackPanel>
                                         </Grid>
                                     </StackPanel>
                                     
+                                    <!-- Action Buttons -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="15,0,0,0" VerticalAlignment="Center">
-                                        <Button Content="Pause" Command="{Binding DataContext.PauseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="0,0,5,0" />
-                                        <Button Content="Cancel" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <!-- Start Queued Item -->
+                                        <Button Content="Start" Command="{Binding DataContext.StartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding CanStart, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Pause -->
+                                        <Button Content="Pause" Command="{Binding DataContext.PauseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding CanPause, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Resume -->
+                                        <Button Content="Resume" Command="{Binding DataContext.ResumeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding CanResume, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Cancel -->
+                                        <Button Content="Cancel" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Retry -->
+                                        <Button Content="Retry" Command="{Binding DataContext.RetryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding CanRetry, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Open Folder -->
+                                        <Button Content="📁 Open" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Visibility="{Binding IsFinished, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+
+                                        <!-- Remove -->
+                                        <Button Content="✕" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Width="28" Padding="0" Cursor="Hand" ToolTip="Remove from list"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -85,10 +374,16 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
                 
-                <TextBlock Grid.Row="1" Text="No active downloads" Foreground="{DynamicResource TextMutedBrush}" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                           Visibility="{Binding HasDownloads, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                <!-- Empty Queue Placeholder -->
+                <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{Binding HasDownloads, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <TextBlock Text="📥" FontSize="42" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
+                    <TextBlock Text="No downloads in queue" Foreground="{DynamicResource TextMutedBrush}" 
+                               HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Paste a video URL above and click Download or Add to Queue" Foreground="{DynamicResource TextDisabledBrush}" 
+                               HorizontalAlignment="Center" FontSize="13"/>
+                </StackPanel>
             </Grid>
-        </controls:ModernCard>
+        </Border>
     </Grid>
 </UserControl>

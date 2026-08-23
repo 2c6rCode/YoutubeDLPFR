@@ -57,10 +57,12 @@ public partial class DownloadItem : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FormattedTotal))]
+    [NotifyPropertyChangedFor(nameof(FormattedSize))]
     private long _totalBytes = 0;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FormattedDownloaded))]
+    [NotifyPropertyChangedFor(nameof(FormattedSize))]
     private long _downloadedBytes = 0;
 
     [ObservableProperty]
@@ -75,10 +77,16 @@ public partial class DownloadItem : ObservableObject
     private string _outputPath = string.Empty;
 
     [ObservableProperty]
+    private string _outputFilename = string.Empty;
+
+    [ObservableProperty]
     private string _format = string.Empty;
 
     [ObservableProperty]
     private string _quality = string.Empty;
+
+    [ObservableProperty]
+    private string _customArgs = string.Empty;
 
     [ObservableProperty]
     private DateTime _createdAt = DateTime.Now;
@@ -90,6 +98,7 @@ public partial class DownloadItem : ObservableObject
     private DateTime? _completedAt;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
     private string _errorMessage = string.Empty;
 
     [ObservableProperty]
@@ -103,11 +112,14 @@ public partial class DownloadItem : ObservableObject
     public string FormattedProgress => $"{Progress:F1}%";
     public string FormattedDownloaded => FormatBytes(DownloadedBytes);
     public string FormattedTotal => FormatBytes(TotalBytes);
+    public string FormattedSize => TotalBytes > 0 ? $"{FormatBytes(DownloadedBytes)} / {FormatBytes(TotalBytes)}" : (DownloadedBytes > 0 ? FormatBytes(DownloadedBytes) : "0 B");
     public string FormattedEta => TimeSpanConverter.Format(Eta);
 
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
     public bool IsActive => Status is DownloadStatus.Downloading or DownloadStatus.Merging or DownloadStatus.PostProcessing;
     public bool IsFinished => Status is DownloadStatus.Completed or DownloadStatus.Failed or DownloadStatus.Cancelled;
-    public bool CanRetry => Status == DownloadStatus.Failed && RetryCount < 3;
+    public bool CanStart => Status is DownloadStatus.Queued or DownloadStatus.Pending;
+    public bool CanRetry => Status is DownloadStatus.Failed or DownloadStatus.Cancelled;
     public bool CanPause => Status == DownloadStatus.Downloading;
     public bool CanResume => Status == DownloadStatus.Paused;
     public bool CanCancel => Status is DownloadStatus.Queued or DownloadStatus.Downloading or DownloadStatus.Paused;

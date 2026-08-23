@@ -88,28 +88,33 @@ public partial class HistoryViewModel : BaseViewModel
         // Filtering is handled in the view via CollectionViewSource
     }
 
+    public bool HasHistory => HistoryItems.Count > 0;
+
     private void UpdateStats()
     {
         TotalCompleted = HistoryItems.Count(i => i.Status == DownloadStatus.Completed);
         TotalFailed = HistoryItems.Count(i => i.Status == DownloadStatus.Failed);
         TotalDownloadedBytes = HistoryItems.Where(i => i.Status == DownloadStatus.Completed).Sum(i => i.DownloadedBytes);
+        OnPropertyChanged(nameof(HasHistory));
     }
 
     [RelayCommand]
-    private async Task RetrySelectedAsync()
+    private async Task RetrySelectedAsync(DownloadItem? item = null)
     {
-        if (SelectedItem != null && SelectedItem.CanRetry)
+        var target = item ?? SelectedItem;
+        if (target != null && target.CanRetry)
         {
-            await _downloadService.RetryDownloadAsync(SelectedItem.Id);
+            await _downloadService.RetryDownloadAsync(target.Id);
         }
     }
 
     [RelayCommand]
-    private async Task RemoveSelectedAsync()
+    private async Task RemoveSelectedAsync(DownloadItem? item = null)
     {
-        if (SelectedItem != null)
+        var target = item ?? SelectedItem;
+        if (target != null)
         {
-            await _downloadService.RemoveDownloadAsync(SelectedItem.Id);
+            await _downloadService.RemoveDownloadAsync(target.Id);
         }
     }
 
@@ -120,13 +125,17 @@ public partial class HistoryViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private void OpenFileLocation()
+    private void OpenFileLocation(DownloadItem? item = null)
     {
-        if (SelectedItem != null && SelectedItem.Status == DownloadStatus.Completed)
+        var target = item ?? SelectedItem;
+        if (target != null)
         {
             try
             {
-                var directory = Path.GetDirectoryName(SelectedItem.OutputPath);
+                var directory = !string.IsNullOrEmpty(target.OutputPath) && Directory.Exists(target.OutputPath)
+                    ? target.OutputPath
+                    : Path.GetDirectoryName(target.OutputPath);
+
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
