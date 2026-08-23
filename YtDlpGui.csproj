@@ -12,6 +12,7 @@
     <Authors>YtDlpGui</Authors>
     <Description>Professional GUI frontend for yt-dlp</Description>
     <Copyright>Copyright © 2024</Copyright>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <StartupObject>YtDlpGui.App</StartupObject>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
@@ -29,8 +30,6 @@
   <ItemGroup>
     <Resource Include="Resources\**" />
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>    <None Update="Resources\logo.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

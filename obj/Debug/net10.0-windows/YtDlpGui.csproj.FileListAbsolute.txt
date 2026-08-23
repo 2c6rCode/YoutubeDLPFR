@@ -1,13 +1,3 @@
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui.csproj.AssemblyReference.cache
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\DownloadsView.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\HistoryView.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\MainWindow.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\QueueView.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\SettingsView.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\App.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\GeneratedInternalTypeHelper.g.cs
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui_MarkupCompile.cache
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui_MarkupCompile.lref
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\YtDlpGui.exe
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\YtDlpGui.deps.json
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\YtDlpGui.runtimeconfig.json
@@ -41,6 +31,16 @@ C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\Micros
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\Microsoft.Extensions.Options.dll
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\Microsoft.Extensions.Primitives.dll
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui.csproj.AssemblyReference.cache
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\DownloadsView.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\HistoryView.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\MainWindow.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\QueueView.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\SettingsView.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\App.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui_MarkupCompile.cache
+C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui_MarkupCompile.lref
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\App.baml
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\DownloadsView.baml
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\Views\HistoryView.baml
@@ -57,4 +57,3 @@ C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\refint
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui.pdb
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\YtDlpGui.genruntimeconfig.cache
 C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\obj\Debug\net10.0-windows\ref\YtDlpGui.dll
-C:\Users\kiaph.ENTITLED\Downloads\YoutubeMaxxer\bin\Debug\net10.0-windows\Resources\logo.ico
