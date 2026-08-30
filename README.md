@@ -44,9 +44,5 @@ and follow their instruction
 
 ###HOW TO USE
 
-Download the .Zip file in the release 
-
-Extract it and open the folder
-
-Open Bin -> Debug -> net10.0Windows -> Yt-dlpGUI.exe
+Download the .exe file and enjoy
 
