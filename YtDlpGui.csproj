@@ -17,6 +17,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <WpfTempProjectOutputPath>$(BaseIntermediateOutputPath)</WpfTempProjectOutputPath>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>YtDlpGui.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +34,18 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="YtDlpGui.pfx">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+
+  <!-- Sign the output exe after build using the self-signed cert from the cert store -->
+  <Target Name="SignOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <ExeToSign>$(OutputPath)$(AssemblyName).exe</ExeToSign>
+      <CertThumbprint>7BC682AD4F399E8892535A64A93B37D640B1030D</CertThumbprint>
+    </PropertyGroup>
+    <Exec Command="powershell -NoProfile -Command &quot;$cert = Get-Item Cert:\CurrentUser\My\$(CertThumbprint); Set-AuthenticodeSignature -FilePath '$(ExeToSign)' -Certificate $cert -HashAlgorithm SHA256 -TimestampServer 'http://timestamp.digicert.com'&quot;" ContinueOnError="true" />
+  </Target>
 
 </Project>
