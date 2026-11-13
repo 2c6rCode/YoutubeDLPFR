@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="Shamiko_anime.webp" width="160" alt="YoutubeMaxxer Logo" style="border-radius: 12px;" />
+  <img src="Shamiko_anime.webp" width="140" alt="YoutubeMaxxer Logo" />
   <h1>YoutubeMaxxer</h1>
-  <p><b>A precision studio desktop frontend for yt-dlp on Windows.</b></p>
+  <p>Desktop graphical interface for yt-dlp on Windows.</p>
   <p>
-    <a href="https://github.com/2c6rCode/YoutubeDLPFR/releases/latest"><img src="https://img.shields.io/github/v/release/2c6rCode/YoutubeDLPFR?style=flat-square&color=E11D48&label=Release" alt="Latest Release" /></a>
-    <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-21262D?style=flat-square" alt="Platform" />
-    <img src="https://img.shields.io/badge/Framework-.NET%2010%20WPF-21262D?style=flat-square" alt="Framework" />
-    <img src="https://img.shields.io/badge/Engine-yt--dlp-21262D?style=flat-square" alt="Engine" />
+    <a href="https://github.com/2c6rCode/YoutubeDLPFR/releases/latest"><img src="https://img.shields.io/github/v/release/2c6rCode/YoutubeDLPFR?style=flat-square&color=21262D&label=release" alt="Latest Release" /></a>
+    <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-21262D?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/dotnet-10.0%20WPF-21262D?style=flat-square" alt="Framework" />
+    <img src="https://img.shields.io/badge/engine-yt--dlp-21262D?style=flat-square" alt="Engine" />
   </p>
 </div>
 
@@ -14,71 +14,65 @@
 
 ## Overview
 
-**YoutubeMaxxer** is a modern, standalone Windows desktop interface for [yt-dlp](https://github.com/yt-dlp/yt-dlp). It brings the full depth of yt-dlp into a tactile studio dashboard—eliminating the need to memorize CLI flags, format selectors, and manual cookie exports.
-
-Built with C# and .NET 10 WPF, featuring an obsidian dark theme, native Windows 11 immersive chrome, and real-time tabular telemetry.
+YoutubeMaxxer is a native Windows desktop frontend for [yt-dlp](https://github.com/yt-dlp/yt-dlp). It exposes command-line arguments for extraction, clipping, authentication, and post-processing through a structured desktop interface built with C# and .NET 10.
 
 ---
 
-## Key Features
+## Features
 
-### ✂️ Partial Video Cutting (`--download-sections`)
-- Download only the specific time range you need (e.g. `01:30` to `03:45`) without fetching the entire video first.
-- Saves bandwidth and disk space by requesting only matching byte ranges from streaming servers.
-- Automatic `--force-keyframes-at-cuts` ensures clean cuts without frozen or black intro frames.
+### Time-Range Cutting
+- Extracts specific duration intervals using `--download-sections` (e.g., `*01:30-03:45`).
+- Streams only the necessary byte ranges from the host server.
+- Uses `--force-keyframes-at-cuts` to prevent keyframe boundary artifacts.
 
-### 📋 Batch & Text File URL Ingestion
-- **Drag-and-Drop:** Drop any `.txt`, `.csv`, or `.urls` file directly onto the window to instantly load all URLs.
-- **Import Button:** Browse and select text files containing video, playlist, or channel links.
-- **Batch Detector:** Displays a badge count (e.g. `14 URLs`) and queues all items sequentially in one click.
-- Automatic comment stripping (ignores lines starting with `#`).
+### Batch and Text File Ingestion
+- Accepts multiple URLs via drag-and-drop of `.txt`, `.csv`, or `.urls` files directly into the window.
+- In-app file picker imports lists with automatic comment exclusion (lines beginning with `#`).
+- Multi-line detection queues batch items sequentially in a single pass.
 
-### 🍪 1-Click Browser Cookie Sessions (`--cookies-from-browser`)
-- Direct session extraction from installed browsers: **Chrome**, **Edge**, **Firefox**, **Brave**, **Opera**, and **Vivaldi**.
-- Bypasses YouTube bot verification, sign-in walls, age gates, and private playlist restrictions without manual cookie exporting.
+### Browser Session Cookies
+- Direct session extraction via `--cookies-from-browser` for Chrome, Edge, Firefox, Brave, Opera, and Vivaldi.
+- Bypasses bot gates, age restrictions, and access-limited playlists without manual `.txt` cookie exports.
 
-### 🛡️ SponsorBlock Integration (`--sponsorblock-remove all`)
-- Automatically queries the SponsorBlock community database to excise sponsored segments, intro animations, and self-promotion from downloaded media.
+### SponsorBlock
+- Automatically queries the SponsorBlock API to excise sponsored segments, intros, and self-promotions using `--sponsorblock-remove all`.
 
-### 🌐 Network, Proxies & Geo-Restrictions
-- Full support for HTTP, HTTPS, and SOCKS5 proxies (including Tor via `socks5://127.0.0.1:9050`).
-- Geo-bypass spoofing with optional two-letter ISO country codes.
+### Network and Geo-Bypass
+- Proxy support for HTTP, HTTPS, and SOCKS5 endpoints (including Tor routing via `socks5://127.0.0.1:9050`).
+- Geo-restriction bypass options with two-letter ISO country code simulation.
 
-### ⚡ Engine & Media Craft
-- **Tactile Mode Switcher:** Instant toggle between Video and Audio extraction modes.
-- **Presets & Inspection:** Quick inspection panel for video metadata, uploader details, duration, and resolution tags.
-- **Subtitles & Metadata:** Auto-embed subtitles, chapters, artist tags, and cover art directly into containers (`mp4`, `mkv`, `mp3`, `opus`, `flac`).
-- **Telemetry:** Real-time transfer speed, downloaded bytes, ETA, and progress on monospaced tabular tracks.
+### Container and Audio Formatting
+- Separate Video and Audio extraction pipelines.
+- Formats: MP4, MKV, WebM, MP3, M4A, Opus, WAV, FLAC.
+- Embeds metadata tags, chapters, subtitles, and cover art thumbnails into container files.
+- Real-time download speed, ETA, and byte counters using tabular monospace rendering.
 
 ---
 
-## Installation & Quick Start
+## Installation
 
-1. Download the latest standalone **`YtDlpGui.exe`** from the [Releases page](https://github.com/2c6rCode/YoutubeDLPFR/releases/latest).
-2. Ensure you have **yt-dlp** and **FFmpeg** available on your machine (either in your system `PATH` or placed in the same folder as `YtDlpGui.exe`).
-   - You can also configure custom executable paths directly in the in-app **Settings** tab.
-3. Run `YtDlpGui.exe` and paste a URL or drop a `.txt` list to start downloading.
-
-*(No .NET runtime installation required—the release binary is fully self-contained).*
+1. Download `YtDlpGui.exe` from the [Releases](https://github.com/2c6rCode/YoutubeDLPFR/releases/latest) page.
+2. Ensure `yt-dlp` and `ffmpeg` are available in your system `PATH` or placed in the same folder as `YtDlpGui.exe`. Custom paths can also be assigned in the Settings tab.
+3. Launch `YtDlpGui.exe`. The release binary is self-contained and does not require a local .NET installation.
 
 ---
 
 ## Building from Source
 
-### Prerequisites
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+### Requirements
+- .NET 10 SDK
 - Windows 10 (Build 19041+) or Windows 11
 
-### Build Instructions
+### Commands
 ```powershell
-# Clone the repository
+# Clone repository
 git clone https://github.com/2c6rCode/YoutubeDLPFR.git
 cd YoutubeDLPFR
 
-# Build debug binary
+# Debug build
 dotnet build
 
-# Publish standalone single-file release executable
+# Publish standalone single-file binary
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
 ```
 
@@ -87,4 +81,4 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-`yt-dlp` and `FFmpeg` are independent projects governed by their respective licenses.
+yt-dlp and FFmpeg are distributed under their own respective licenses.
