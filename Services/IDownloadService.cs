@@ -57,4 +57,15 @@ public class DownloadOptions
     public bool ContinueIncomplete { get; set; }
     public string? Proxy { get; set; }
     public int SocketTimeout { get; set; } = 30;
+    public string? DownloadSections { get; set; }
+    public string? CookiesFromBrowser { get; set; }
+    public bool SponsorBlock { get; set; }
+    public string? OutputTemplate { get; set; }
+    public bool GeoBypass { get; set; }
+    public string? GeoBypassCountry { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+    public string? TwoFactor { get; set; }
+    public bool UseNetrc { get; set; }
+    public string? PluginDirs { get; set; }
 }

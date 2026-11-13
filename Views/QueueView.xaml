@@ -5,43 +5,44 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:YtDlpGui.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid>
-        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+             d:DesignHeight="600" d:DesignWidth="840"
+             FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont">
+    <Grid Margin="24">
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,15">
+                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,12">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Download Queue" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
-                                <TextBlock Text="{Binding TotalActive, StringFormat='{}{0} active'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Download queue" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding TotalActive, StringFormat='{}{0} active'}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}"/>
                             </Border>
-                            <Border Background="{DynamicResource SurfaceHoverBrush}" CornerRadius="10" Padding="8,2">
-                                <TextBlock Text="{Binding TotalQueued, StringFormat='{}{0} queued'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="{Binding TotalQueued, StringFormat='{}{0} queued'}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}"/>
                             </Border>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Start All Queued" Command="{Binding StartAllQueuedCommand}" 
-                                    Margin="0,0,8,0" Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Start all queued" Command="{Binding StartAllQueuedCommand}" 
+                                    Margin="0,0,8,0" Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
-                            <Button Content="Pause All" Command="{Binding PauseAllCommand}" 
-                                    Margin="0,0,8,0" Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Pause all" Command="{Binding PauseAllCommand}" 
+                                    Margin="0,0,8,0" Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
-                            <Button Content="Clear Completed" Command="{Binding ClearCompletedCommand}" 
-                                    Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Clear completed" Command="{Binding ClearCompletedCommand}" 
+                                    Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
@@ -50,16 +51,16 @@
                 </Border>
                 
                 <!-- Queue Items -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10"
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="12"
                               Visibility="{Binding HasItems, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <!-- Active Downloads Section -->
-                        <TextBlock Text="ACTIVE DOWNLOADS" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="10,10,0,8"
+                        <TextBlock Text="Active downloads" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="4,6,0,8"
                                    Visibility="{Binding ActiveDownloads.Count, Converter={StaticResource NullToVisibilityConverter}}"/>
                         <ItemsControl ItemsSource="{Binding ActiveDownloads}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -67,27 +68,27 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             
-                                            <Border Grid.Column="0" Width="110" Height="62" CornerRadius="4" Background="{DynamicResource BackgroundBrush}" Margin="0,0,12,0" ClipToBounds="True">
+                                            <Border Grid.Column="0" Width="110" Height="62" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,12,0" ClipToBounds="True">
                                                 <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
-                                                <ProgressBar Value="{Binding Progress}" Maximum="100" Height="5" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}" BorderThickness="0" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                                <ProgressBar Value="{Binding Progress}" Maximum="100" Height="4" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}" BorderThickness="0" Margin="0,0,0,5"/>
                                                 <Grid>
-                                                    <TextBlock Text="{Binding FormattedProgress}" HorizontalAlignment="Left" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="11"/>
-                                                    <TextBlock Text="{Binding FormattedSpeed}" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/>
-                                                    <TextBlock Text="{Binding FormattedEta, StringFormat='ETA: {0}'}" HorizontalAlignment="Right" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding FormattedProgress}" FontFamily="Consolas, Segoe UI" HorizontalAlignment="Left" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding FormattedSpeed}" FontFamily="Consolas, Segoe UI" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding FormattedEta, StringFormat='ETA: {0}'}" FontFamily="Consolas, Segoe UI" HorizontalAlignment="Right" Foreground="{DynamicResource TextMutedBrush}" FontSize="11"/>
                                                 </Grid>
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
                                                 <Button Content="Pause" Command="{Binding DataContext.PauseSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
                                                         Visibility="{Binding CanPause, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="8,0" Margin="0,0,5,0"/>
+                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"/>
                                                 <Button Content="Cancel" Command="{Binding DataContext.CancelSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
                                                         Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="8,0"/>
+                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="10,0" FontSize="12"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -96,12 +97,12 @@
                         </ItemsControl>
 
                         <!-- Queued Downloads Section -->
-                        <TextBlock Text="QUEUED" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="10,15,0,8"
+                        <TextBlock Text="Queued" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="4,14,0,8"
                                    Visibility="{Binding QueuedDownloads.Count, Converter={StaticResource NullToVisibilityConverter}}"/>
                         <ItemsControl ItemsSource="{Binding QueuedDownloads}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                    <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -109,22 +110,24 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             
-                                            <Border Grid.Column="0" Width="110" Height="62" CornerRadius="4" Background="{DynamicResource BackgroundBrush}" Margin="0,0,12,0" ClipToBounds="True">
+                                            <Border Grid.Column="0" Width="110" Height="62" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,12,0" ClipToBounds="True">
                                                 <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
-                                                <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                                <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Status}" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5"/>
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
                                                 <Button Content="Start" Command="{Binding DataContext.StartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                        Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Height="28" Padding="10,0" Margin="0,0,5,0"/>
+                                                        Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Height="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"/>
                                                 <Button Content="Cancel" Command="{Binding DataContext.CancelSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="8,0" Margin="0,0,5,0"/>
-                                                <Button Content="✕" Command="{Binding DataContext.RemoveSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" Height="28" Width="28" Padding="0"/>
+                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"/>
+                                                <Button Command="{Binding DataContext.RemoveSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" Height="28" Width="28" Padding="0">
+                                                    <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Button>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -135,9 +138,16 @@
                 </ScrollViewer>
 
                 <!-- Empty Queue Message -->
-                <TextBlock Grid.Row="1" Text="Queue is empty" Foreground="{DynamicResource TextMutedBrush}" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                           Visibility="{Binding HasItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{Binding HasItems, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <Border Width="48" Height="48" CornerRadius="24" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center" Margin="0,0,0,10">
+                        <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Border>
+                    <TextBlock Text="Queue is empty" Foreground="{DynamicResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Items added from the downloads view will appear here" Foreground="{DynamicResource TextMutedBrush}" 
+                               HorizontalAlignment="Center" FontSize="12"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

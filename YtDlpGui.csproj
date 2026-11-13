@@ -17,7 +17,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <WpfTempProjectOutputPath>$(BaseIntermediateOutputPath)</WpfTempProjectOutputPath>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>YtDlpGui.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 

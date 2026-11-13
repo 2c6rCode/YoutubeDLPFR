@@ -601,11 +601,67 @@ public class YtDlpService : IYtDlpService
         if (!string.IsNullOrEmpty(options.OutputPath))
         {
             args.Add("-o");
-            // include quality in filename so different quality downloads don't collide
+            var template = !string.IsNullOrWhiteSpace(options.OutputTemplate)
+                ? options.OutputTemplate
+                : "%(title)s.%(ext)s";
+            
             var qualitySuffix = (!string.IsNullOrEmpty(options.Quality) && options.Quality != "best")
                 ? $".{options.Quality}p"
                 : string.Empty;
-            args.Add(Path.Combine(options.OutputPath, $"%(title)s{qualitySuffix}.%(ext)s"));
+
+            if (!string.IsNullOrEmpty(qualitySuffix) && template.Contains(".%(ext)s"))
+                template = template.Replace(".%(ext)s", $"{qualitySuffix}.%(ext)s");
+
+            args.Add(Path.Combine(options.OutputPath, template));
+        }
+
+        if (!string.IsNullOrEmpty(options.DownloadSections))
+        {
+            args.Add("--download-sections");
+            args.Add(options.DownloadSections);
+            args.Add("--force-keyframes-at-cuts");
+        }
+
+        if (options.SponsorBlock)
+        {
+            args.Add("--sponsorblock-remove");
+            args.Add("all");
+        }
+
+        if (options.GeoBypass)
+        {
+            args.Add("--geo-bypass");
+            if (!string.IsNullOrEmpty(options.GeoBypassCountry))
+            {
+                args.Add("--geo-bypass-country");
+                args.Add(options.GeoBypassCountry);
+            }
+        }
+
+        if (options.UseNetrc)
+        {
+            args.Add("--netrc");
+        }
+        else if (!string.IsNullOrEmpty(options.Username))
+        {
+            args.Add("--username");
+            args.Add(options.Username);
+            if (!string.IsNullOrEmpty(options.Password))
+            {
+                args.Add("--password");
+                args.Add(options.Password);
+            }
+            if (!string.IsNullOrEmpty(options.TwoFactor))
+            {
+                args.Add("--twofactor");
+                args.Add(options.TwoFactor);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(options.PluginDirs))
+        {
+            args.Add("--plugin-dirs");
+            args.Add(options.PluginDirs);
         }
 
         // always overwrite so re-downloading at a different quality replaces the old file
@@ -659,7 +715,12 @@ public class YtDlpService : IYtDlpService
             args.Add("--no-playlist");
         }
 
-        if (!string.IsNullOrEmpty(options.Cookies))
+        if (!string.IsNullOrEmpty(options.CookiesFromBrowser) && options.CookiesFromBrowser != "none")
+        {
+            args.Add("--cookies-from-browser");
+            args.Add(options.CookiesFromBrowser);
+        }
+        else if (!string.IsNullOrEmpty(options.Cookies))
         {
             args.Add("--cookies");
             args.Add(options.Cookies);

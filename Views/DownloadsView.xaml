@@ -5,19 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:YtDlpGui.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="900"
-             FontFamily="Segoe UI">
+             d:DesignHeight="720" d:DesignWidth="940"
+             FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Input & Options Card -->
+        <!-- Capture & Extraction Deck -->
         <Border Grid.Row="0" Margin="0,0,0,20" Padding="20"
-                Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
+                Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
             <StackPanel>
-                <!-- URL Input and Main Action Buttons -->
+                <!-- URL Input and Primary Action Buttons -->
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -26,36 +26,94 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     
+                    <!-- URL Input Box with integrated Clear, Paste, and Import list actions -->
                     <Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                            CornerRadius="8" Height="44" Padding="12,0">
+                            CornerRadius="6" Height="40" Padding="12,0"
+                            AllowDrop="True" Drop="OnFileDrop" DragOver="OnDragOver">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+                            
+                            <!-- Link Icon -->
                             <TextBlock Grid.Column="0" Text="&#xE71B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                       FontSize="15" Foreground="{DynamicResource TextMutedBrush}"
+                                       FontSize="13.5" Foreground="{DynamicResource TextMutedBrush}"
                                        VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            
+                            <!-- URL Text Box -->
                             <TextBox Grid.Column="1" Text="{Binding UrlInput, UpdateSourceTrigger=PropertyChanged}" 
-                                     FontSize="14" VerticalContentAlignment="Center"
+                                     FontSize="13.5" VerticalContentAlignment="Center"
                                      Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
                                      BorderThickness="0"
-                                     ToolTip="Paste video or playlist URL here"/>
+                                     ToolTip="Paste video/playlist URLs or drop a .txt list"/>
+
+                            <!-- Detected Batch Count Badge (when > 1 URL detected) -->
+                            <Border Grid.Column="2" Background="{DynamicResource PrimaryBrush}" CornerRadius="3" Padding="6,1.5" Margin="4,0" VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DetectedUrlCount, Converter={StaticResource NullToVisibilityConverter}}" Value="Visible">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="{Binding DetectedUrlCount, StringFormat='{}{0} URLs'}" FontSize="10.5" FontFamily="Consolas, Segoe UI" FontWeight="SemiBold" Foreground="White"/>
+                            </Border>
+
+                            <!-- Clear Button (visible when URL is not empty) -->
+                            <Button Grid.Column="3" Command="{Binding ClearUrlCommand}"
+                                    Width="24" Height="24" Margin="2,0" Padding="0"
+                                    Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"
+                                    BorderThickness="0" Cursor="Hand" ToolTip="Clear URL"
+                                    Visibility="{Binding UrlInput, Converter={StaticResource StringIsNullOrEmptyConverter}}">
+                                <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Button>
+
+                            <!-- Quick Paste Action Button -->
+                            <Button Grid.Column="4" Command="{Binding PasteFromClipboardCommand}"
+                                    Height="24" Padding="8,0" Margin="2,0"
+                                    Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                    Cursor="Hand" ToolTip="Paste from clipboard">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="&#xE77F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Paste" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Batch Import File Button -->
+                            <Button Grid.Column="5" Command="{Binding ImportUrlFileCommand}"
+                                    Height="24" Padding="8,0" Margin="2,0,0,0"
+                                    Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                    Cursor="Hand" ToolTip="Import list of URLs from a .txt file">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="&#xE8E5;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Import" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </Border>
                     
-                    <!-- Analyze / Inspect Button -->
+                    <!-- Inspect Button -->
                     <Button Grid.Column="1" Command="{Binding AnalyzeCommand}" 
-                            Margin="10,0,0,0" Width="104" Height="44" Cursor="Hand"
+                            Margin="8,0,0,0" Width="100" Height="40" Cursor="Hand"
                             Background="{DynamicResource Surface2Brush}"
                             Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                       FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center">
+                                       FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock FontSize="13" FontWeight="Medium" VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Text" Value="Inspect"/>
@@ -70,35 +128,35 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Add to Queue -->
+                    <!-- Add to Queue Button -->
                     <Button Grid.Column="2" Command="{Binding AddToQueueCommand}" 
-                            Margin="10,0,0,0" Width="120" Height="44" Cursor="Hand"
+                            Margin="8,0,0,0" Width="116" Height="40" Cursor="Hand"
                             Background="{DynamicResource Surface2Brush}"
                             Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="&#xE710;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                       FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Add Queue" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                       FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Add queue" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
-                    <!-- Download Now -->
+                    <!-- Download Now (Accent Action) -->
                     <Button Grid.Column="3" Command="{Binding DownloadCommand}" 
-                            Margin="10,0,0,0" Width="130" Height="44" Cursor="Hand"
+                            Margin="8,0,0,0" Width="124" Height="40" Cursor="Hand"
                             Background="{DynamicResource PrimaryBrush}"
                             Foreground="{DynamicResource TextOnPrimaryBrush}"
                             BorderThickness="0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                       FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Download" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                       FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Download" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </Grid>
 
-                <!-- Options Row: Type, Format, Quality, Output Directory -->
+                <!-- Options Row: Tactile Mode Segmented Switch, Format, Resolution, Destination -->
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -108,29 +166,32 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Type Radio Buttons -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <TextBlock Text="Type" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <RadioButton Content="Video" IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Video}" 
-                                     Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <RadioButton Content="Audio" IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Audio}" 
-                                     Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <!-- Tactile Segmented Switch (Video / Audio) -->
+                    <Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="6" Padding="2" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Style="{StaticResource SegmentedRadioButtonStyle}" Content="Video" 
+                                         IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Video}"/>
+                            <RadioButton Style="{StaticResource SegmentedRadioButtonStyle}" Content="Audio" 
+                                         IsChecked="{Binding SelectedDownloadType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Audio}"/>
+                        </StackPanel>
+                    </Border>
 
                     <!-- Format ComboBox -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <TextBlock Text="Format" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <TextBlock Text="Format" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding SelectedFormat}" 
-                                  Width="96" Height="32" FontSize="13" VerticalContentAlignment="Center"
+                                  Width="92" Height="32" FontSize="12.5" VerticalContentAlignment="Center"
                                   Background="{DynamicResource InputBackgroundBrush}"
                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Quality ComboBox -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                        <TextBlock Text="Quality" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <TextBlock Text="Quality" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding AvailableQualities}" SelectedItem="{Binding SelectedQuality}" 
-                                  Width="110" Height="32" FontSize="13" VerticalContentAlignment="Center"
+                                  Width="108" Height="32" FontSize="12.5" VerticalContentAlignment="Center"
                                   Background="{DynamicResource InputBackgroundBrush}"
                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </StackPanel>
@@ -139,23 +200,70 @@
                     <Border Grid.Column="3" Background="{DynamicResource InputBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                             CornerRadius="6" Height="32" Padding="8,0" Margin="0,0,8,0" VerticalAlignment="Center">
-                        <TextBox Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" 
-                                 FontSize="12" VerticalContentAlignment="Center"
-                                 Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
-                                 BorderThickness="0" ToolTip="Destination folder"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="&#xED25;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" 
+                                       FontSize="12" Foreground="{DynamicResource TextDisabledBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding OutputPath, UpdateSourceTrigger=PropertyChanged}" 
+                                     FontSize="12" VerticalContentAlignment="Center"
+                                     Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
+                                     BorderThickness="0" ToolTip="Destination folder"/>
+                        </Grid>
                     </Border>
 
                     <Button Grid.Column="4" Content="Browse" Command="{Binding BrowseFolderCommand}" 
-                            Height="32" Width="76" FontSize="12" VerticalAlignment="Center"
+                            Height="32" Width="72" FontSize="12" VerticalAlignment="Center"
                             Background="{DynamicResource Surface2Brush}"
                             Foreground="{DynamicResource TextPrimaryBrush}"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="1" Cursor="Hand"/>
                 </Grid>
 
-                <!-- Clean Media Inspection Banner (Format Dropdowns Removed) -->
+                <!-- Advanced Strip: Partial Cutting, Browser Cookies & SponsorBlock -->
+                <Border Margin="0,12,0,0" Padding="12,8" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Time Range Cutting Toggle & Inputs -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <CheckBox Content="Clip range" IsChecked="{Binding TimeCutEnabled}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" IsEnabled="{Binding TimeCutEnabled}" Opacity="{Binding TimeCutEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="From" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Height="26" Width="60" Margin="0,0,10,0">
+                                    <TextBox Text="{Binding TimeCutStart, UpdateSourceTrigger=PropertyChanged}" FontSize="11.5" FontFamily="Consolas, Segoe UI" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" ToolTip="Start time (e.g. 01:30 or 90)"/>
+                                </Border>
+
+                                <TextBlock Text="To" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Height="26" Width="60">
+                                    <TextBox Text="{Binding TimeCutEnd, UpdateSourceTrigger=PropertyChanged}" FontSize="11.5" FontFamily="Consolas, Segoe UI" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="0" ToolTip="End time (e.g. 03:45 or 00:00 for end)"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Browser Session Cookies Dropdown -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="Browser session" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding AvailableBrowserCookies}" SelectedItem="{Binding SelectedBrowserCookies}" Width="86" Height="26" FontSize="11.5" VerticalContentAlignment="Center" ToolTip="Import active browser cookies to bypass sign-in and age restrictions"/>
+                        </StackPanel>
+
+                        <!-- SponsorBlock Skip Toggle -->
+                        <CheckBox Grid.Column="4" Content="Skip sponsors" IsChecked="{Binding SponsorBlockEnabled}" FontSize="12" VerticalAlignment="Center" ToolTip="Automatically remove sponsored segments via SponsorBlock"/>
+                    </Grid>
+                </Border>
+
+                <!-- Media Inspection Banner -->
                 <Border Margin="0,16,0,0" Padding="16" Background="{DynamicResource Surface2Brush}" 
-                        BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="10"
+                        BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1" CornerRadius="8"
                         Visibility="{Binding InspectedMedia, Converter={StaticResource NullToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -165,13 +273,13 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Thumbnail -->
-                        <Border Grid.Column="0" CornerRadius="8" ClipToBounds="True" Height="84" Background="{DynamicResource BackgroundBrush}">
+                        <Border Grid.Column="0" CornerRadius="6" ClipToBounds="True" Height="84" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <Image Source="{Binding InspectedMedia.ThumbnailUrl}" Stretch="UniformToFill"/>
                         </Border>
 
                         <!-- Video Metadata Details -->
                         <StackPanel Grid.Column="1" Margin="16,0,16,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding InspectedMedia.Title}" FontSize="15" FontWeight="SemiBold" 
+                            <TextBlock Text="{Binding InspectedMedia.Title}" FontSize="14.5" FontWeight="SemiBold" 
                                        Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,0,0,6"/>
                             
                             <WrapPanel Margin="0,0,0,0">
@@ -181,7 +289,7 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
                                     <TextBlock Text="&#xE8B0;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <TextBlock Text="{Binding InspectedMedia.FormattedViewCount, StringFormat='{}{0} views'}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding InspectedMedia.FormattedViewCount, StringFormat='{}{0} views'}" FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
                                     <TextBlock Text="&#xE787;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
@@ -189,7 +297,7 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                     <TextBlock Text="&#xE916;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <TextBlock Text="{Binding InspectedMedia.DurationTimeSpan, Converter={StaticResource TimeSpanConverter}}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding InspectedMedia.DurationTimeSpan, Converter={StaticResource TimeSpanConverter}}" FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}"/>
                                 </StackPanel>
                             </WrapPanel>
                         </StackPanel>
@@ -197,25 +305,25 @@
                         <!-- Dismiss / Clear -->
                         <Button Grid.Column="2" Content="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
                                 Command="{Binding ClearInspectionCommand}"
-                                Width="28" Height="28" FontSize="12"
+                                Width="26" Height="26" FontSize="10"
                                 Background="Transparent" Foreground="{DynamicResource TextMutedBrush}"
                                 BorderThickness="0" VerticalAlignment="Top" Cursor="Hand" ToolTip="Dismiss analysis"/>
                     </Grid>
                 </Border>
 
                 <!-- Error Message -->
-                <Border Margin="0,15,0,0" Padding="12" Background="#33EF4444" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6"
+                <Border Margin="0,16,0,0" Padding="12" Background="#1FEF4444" BorderBrush="{DynamicResource ErrorBrush}" BorderThickness="1" CornerRadius="6"
                         Visibility="{Binding AnalysisErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE783;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding AnalysisErrorMessage}" Foreground="#EF4444" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        <TextBlock Text="&#xE783;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Foreground="{DynamicResource ErrorBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding AnalysisErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="12.5" VerticalAlignment="Center" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
         </Border>
 
-        <!-- Downloads & Queue Card -->
-        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+        <!-- Active Media Pipeline -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -223,31 +331,32 @@
                 </Grid.RowDefinitions>
                 
                 <!-- Card Header with Actions -->
-                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="15,10">
+                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,12">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Downloads" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                            <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
-                                <TextBlock Text="{Binding ActiveDownloads.Count, StringFormat='{}{0} total'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextOnPrimaryBrush}"/>
+                            <TextBlock Text="Downloads" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <!-- Quiet count indicator -->
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="{Binding ActiveDownloads.Count, StringFormat='{}{0} total'}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}"/>
                             </Border>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Start All Queued" Command="{Binding StartDownloadsCommand}" 
-                                    Margin="0,0,8,0" Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Start all queued" Command="{Binding StartDownloadsCommand}" 
+                                    Margin="0,0,8,0" Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
-                            <Button Content="Clear Completed" Command="{Binding ClearCompletedCommand}" 
-                                    Margin="0,0,8,0" Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Clear completed" Command="{Binding ClearCompletedCommand}" 
+                                    Margin="0,0,8,0" Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
-                            <Button Content="Clear All" Command="{Binding ClearQueueCommand}" 
-                                    Padding="12,4" Height="30"
-                                    Background="{DynamicResource SurfaceHoverBrush}"
+                            <Button Content="Clear all" Command="{Binding ClearQueueCommand}" 
+                                    Padding="12,0" Height="28" FontSize="12"
+                                    Background="{DynamicResource Surface2Brush}"
                                     Foreground="{DynamicResource TextPrimaryBrush}"
                                     BorderBrush="{DynamicResource BorderBrush}"
                                     Cursor="Hand"/>
@@ -255,10 +364,11 @@
                     </Grid>
                 </Border>
                 
-                <!-- Downloads List -->
+                <!-- Downloads List (Visible when downloads exist) -->
                 <ListBox Grid.Row="1" ItemsSource="{Binding ActiveDownloads}" SelectedItem="{Binding SelectedItem}"
-                         Background="Transparent" BorderThickness="0" Margin="10"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                         Background="Transparent" BorderThickness="0" Margin="12"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         Visibility="{Binding HasDownloads, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -277,7 +387,7 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -285,88 +395,95 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <!-- Thumbnail -->
-                                    <Border Grid.Column="0" Width="130" Height="75" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" Margin="0,0,15,0" ClipToBounds="True">
+                                    <!-- 16:9 Thumbnail -->
+                                    <Border Grid.Column="0" Width="130" Height="74" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,14,0" ClipToBounds="True">
                                         <Grid>
-                                            <TextBlock Text="🎬" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            <TextBlock Text="&#xE714;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextDisabledBrush}"/>
                                             <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
-                                            <!-- Format & Type Badge -->
-                                            <Border Background="#CC000000" CornerRadius="3" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4">
-                                                <TextBlock Text="{Binding Format}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                            <!-- Format Tag -->
+                                            <Border Background="#CC0D1117" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4">
+                                                <TextBlock Text="{Binding Format}" FontSize="9.5" FontFamily="Consolas, Segoe UI" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                             </Border>
                                         </Grid>
                                     </Border>
                                     
                                     <!-- Details & Progress -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                         
                                         <!-- Status Badge & Meta -->
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="3" Padding="6,1.5" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Status}" FontSize="10.5" FontWeight="SemiBold" Foreground="White"/>
                                             </Border>
-                                            <TextBlock Text="{Binding Quality, StringFormat='Quality: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                            <TextBlock Text="{Binding Quality, StringFormat='Quality: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="11.5" FontWeight="Medium" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
                                                        Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                         </StackPanel>
                                         
-                                        <!-- Progress Bar -->
-                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="6" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}" BorderThickness="0" Margin="0,0,0,6"/>
+                                        <!-- Sleek 3px Progress Track -->
+                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="3.5" Foreground="{DynamicResource PrimaryBrush}" Background="{DynamicResource BorderBrush}" BorderThickness="0" Margin="0,0,0,6"/>
                                         
-                                        <!-- Metrics Row: Percentage, Size, Speed, ETA -->
+                                        <!-- Metrics Row: Tabular Progress, Size, Speed, ETA -->
                                         <Grid>
-                                            <TextBlock Text="{Binding FormattedProgress}" HorizontalAlignment="Left" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding FormattedSize}" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                            <TextBlock Text="{Binding FormattedProgress}" FontFamily="Consolas, Segoe UI" HorizontalAlignment="Left" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="11.5" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding FormattedSize}" FontFamily="Consolas, Segoe UI" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5"/>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding FormattedSpeed}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,15,0"/>
-                                                <TextBlock Text="{Binding FormattedEta, StringFormat='ETA: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"/>
+                                                <TextBlock Text="{Binding FormattedSpeed}" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" Margin="0,0,14,0"/>
+                                                <TextBlock Text="{Binding FormattedEta, StringFormat='ETA: {0}'}" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5"/>
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
                                     
                                     <!-- Action Buttons -->
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="15,0,0,0" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
                                         <!-- Start Queued Item -->
                                         <Button Content="Start" Command="{Binding DataContext.StartItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding CanStart, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
 
                                         <!-- Pause -->
                                         <Button Content="Pause" Command="{Binding DataContext.PauseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding CanPause, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
 
                                         <!-- Resume -->
                                         <Button Content="Resume" Command="{Binding DataContext.ResumeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding CanResume, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
 
                                         <!-- Cancel -->
                                         <Button Content="Cancel" Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
 
                                         <!-- Retry -->
                                         <Button Content="Retry" Command="{Binding DataContext.RetryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding CanRetry, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
 
                                         <!-- Open Folder -->
-                                        <Button Content="📁 Open" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                        <Button Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Visibility="{Binding IsFinished, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand"/>
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xED25;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Open" FontSize="12" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
 
                                         <!-- Remove -->
-                                        <Button Content="✕" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
+                                        <Button Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" 
                                                 Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                                                Height="28" Width="28" Padding="0" Cursor="Hand" ToolTip="Remove from list"/>
+                                                Height="28" Width="28" Padding="0" Cursor="Hand" ToolTip="Remove from list">
+                                            <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -374,15 +491,73 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
                 
-                <!-- Empty Queue Placeholder -->
-                <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
-                            Visibility="{Binding HasDownloads, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                    <TextBlock Text="📥" FontSize="42" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,10"/>
-                    <TextBlock Text="No downloads in queue" Foreground="{DynamicResource TextMutedBrush}" 
-                               HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                    <TextBlock Text="Paste a video URL above and click Download or Add to Queue" Foreground="{DynamicResource TextDisabledBrush}" 
-                               HorizontalAlignment="Center" FontSize="13"/>
-                </StackPanel>
+                <!-- Structured Media Dropzone & Platform Badges (Visible when queue is empty) -->
+                <Grid Grid.Row="1" Margin="20"
+                      Visibility="{Binding HasDownloads, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" 
+                            BorderThickness="1" CornerRadius="8" Padding="32,40"
+                            AllowDrop="True" Drop="OnFileDrop" DragOver="OnDragOver">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Recessed Icon Frame -->
+                            <Border Width="48" Height="48" CornerRadius="24" Background="{DynamicResource BackgroundBrush}" 
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center" Margin="0,0,0,14">
+                                <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                            </Border>
+                            
+                            <!-- Actionable Guidance Copy -->
+                            <TextBlock Text="Paste a media URL or drop a .txt list" Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       HorizontalAlignment="Center" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock Text="Supports direct links, channels, playlists, or text files with multiple URLs" 
+                                       Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" FontSize="12" Margin="0,0,0,16"/>
+
+                            <!-- Quick Action Buttons: Paste from Clipboard & Import .txt list -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24">
+                                <Button Command="{Binding PasteFromClipboardCommand}" Height="32" Padding="14,0" 
+                                        Margin="0,0,8,0" Cursor="Hand"
+                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE77F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Paste from clipboard" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <Button Command="{Binding ImportUrlFileCommand}" Height="32" Padding="14,0" 
+                                        Cursor="Hand"
+                                        Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE8E5;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Import .txt file" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Supported Platform Badges -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0">
+                                    <TextBlock Text="YouTube" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0">
+                                    <TextBlock Text="Twitch" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0">
+                                    <TextBlock Text="X / Twitter" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0">
+                                    <TextBlock Text="SoundCloud" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,6,0">
+                                    <TextBlock Text="TikTok" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                                <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                                    <TextBlock Text="Vimeo" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextDisabledBrush}"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

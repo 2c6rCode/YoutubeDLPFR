@@ -34,6 +34,16 @@ public partial class AppSettings : ObservableObject
     private string _proxy = string.Empty;
     private string _container = string.Empty;
     private string _cookies = string.Empty;
+    private string _browserCookies = "none";
+    private bool _sponsorBlockEnabled = false;
+    private string _outputTemplate = "%(title)s.%(ext)s";
+    private bool _geoBypass = false;
+    private string _geoBypassCountry = string.Empty;
+    private bool _useNetrc = false;
+    private string _username = string.Empty;
+    private string _password = string.Empty;
+    private string _twoFactor = string.Empty;
+    private string _pluginDirs = string.Empty;
 
     public string YtDlpPath
     {
@@ -201,6 +211,66 @@ public partial class AppSettings : ObservableObject
     {
         get => _cookies;
         set => SetProperty(ref _cookies, value);
+    }
+
+    public string BrowserCookies
+    {
+        get => _browserCookies;
+        set => SetProperty(ref _browserCookies, value);
+    }
+
+    public bool SponsorBlockEnabled
+    {
+        get => _sponsorBlockEnabled;
+        set => SetProperty(ref _sponsorBlockEnabled, value);
+    }
+
+    public string OutputTemplate
+    {
+        get => _outputTemplate;
+        set => SetProperty(ref _outputTemplate, value);
+    }
+
+    public bool GeoBypass
+    {
+        get => _geoBypass;
+        set => SetProperty(ref _geoBypass, value);
+    }
+
+    public string GeoBypassCountry
+    {
+        get => _geoBypassCountry;
+        set => SetProperty(ref _geoBypassCountry, value);
+    }
+
+    public bool UseNetrc
+    {
+        get => _useNetrc;
+        set => SetProperty(ref _useNetrc, value);
+    }
+
+    public string Username
+    {
+        get => _username;
+        set => SetProperty(ref _username, value);
+    }
+
+    public string Password
+    {
+        get => _password;
+        set => SetProperty(ref _password, value);
+    }
+
+    public string TwoFactor
+    {
+        get => _twoFactor;
+        set => SetProperty(ref _twoFactor, value);
+    }
+
+    public string PluginDirs
+    {
+        get => _pluginDirs;
+        set => SetProperty(ref _pluginDirs, value);
     }
 
     public static AppSettings Default => new()

@@ -5,112 +5,90 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:YtDlpGui.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="850"
-             FontFamily="Segoe UI">
+             d:DesignHeight="700" d:DesignWidth="880"
+             FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24">
             <!-- Header -->
-            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+            <TextBlock Text="Settings" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
 
             <!-- Component / Dependency Updates Card -->
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="Core Executables &amp; Updates" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Core binaries and updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <!-- yt-dlp Row -->
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" Text="yt-dlp Version:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="yt-dlp version" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
                         
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,10,0">
-                                <TextBlock Text="{Binding YtDlpVersion, StringFormat='v{0}'}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding YtDlpVersion, StringFormat='v{0}'}" FontFamily="Consolas, Segoe UI" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </Border>
                         </StackPanel>
 
-                        <Button Grid.Column="2" Content="Browse Executable..." Command="{Binding BrowseYtDlpPathCommand}" 
-                                Height="34" Padding="12,0" Margin="0,0,10,0" FontSize="12"
+                        <Button Grid.Column="2" Content="Browse binary..." Command="{Binding BrowseYtDlpPathCommand}" 
+                                Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="12"
                                 Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand"/>
 
                         <!-- Update Button (yt-dlp -U) -->
                         <Button Grid.Column="3" Command="{Binding UpdateYtDlpSelfCommand}" 
-                                Height="34" Padding="16,0" FontSize="13" FontWeight="SemiBold" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextOnPrimaryBrush}"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                        <TextBlock Text="&#xE895;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                        <TextBlock FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="Text" Value="Update yt-dlp (yt-dlp -U)"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding IsCheckingUpdates}" Value="True">
-                                                                            <Setter Property="Text" Value="Updating..."/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource PrimaryHoverBrush}"/>
-                                                    </Trigger>
-                                                    <Trigger Property="IsEnabled" Value="False">
-                                                        <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
+                                Height="32" Padding="14,0" FontSize="12" FontWeight="Medium" Cursor="Hand"
+                                Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource TextOnPrimaryBrush}" BorderThickness="0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="&#xE895;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock FontSize="12" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Update yt-dlp"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCheckingUpdates}" Value="True">
+                                                    <Setter Property="Text" Value="Updating..."/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
                         </Button>
                     </Grid>
 
                     <!-- Custom yt-dlp Path textbox -->
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Custom Path:" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="Custom path" Foreground="{DynamicResource TextMutedBrush}" FontSize="12.5" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1" Text="{Binding Settings.YtDlpPath, UpdateSourceTrigger=PropertyChanged}" 
-                                 FontSize="12" Height="30" Padding="8,4" VerticalContentAlignment="Center"
+                                 FontSize="12" Height="32" Padding="8,4" VerticalContentAlignment="Center"
                                  ToolTip="Leave empty to use automatic system yt-dlp"/>
                     </Grid>
 
                     <!-- FFmpeg Row -->
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="130"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="FFmpeg Status:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
-                        <Border Grid.Column="1" HorizontalAlignment="Left" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,4">
-                            <TextBlock Text="{Binding FfmpegVersion}" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Grid.Column="0" Text="FFmpeg status" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" HorizontalAlignment="Left" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                            <TextBlock Text="{Binding FfmpegVersion}" FontFamily="Consolas, Segoe UI" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         </Border>
                         <Button Grid.Column="2" Content="Browse FFmpeg..." Command="{Binding BrowseFfmpegPathCommand}" 
-                                Height="34" Padding="12,0" FontSize="12"
+                                Height="32" Padding="12,0" FontSize="12"
                                 Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand"/>
                     </Grid>
@@ -119,68 +97,197 @@
                     <Border Margin="0,10,0,0" Padding="12" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6"
                             Visibility="{Binding UpdateStatus, Converter={StaticResource StringIsNullOrEmptyConverter}, ConverterParameter=true}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Border>
 
-            <!-- Download Directories & Defaults Card -->
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+            <!-- Download Storage Card -->
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock Text="&#xE8B9;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="Download Storage &amp; Defaults" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE8B9;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Storage and limits" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="150"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Default Download Path:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="Default download path" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1" Text="{Binding Settings.DefaultDownloadPath, UpdateSourceTrigger=PropertyChanged}" 
-                                 FontSize="13" Height="34" Padding="10,0" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
-                        <Button Grid.Column="2" Content="Change..." Command="{Binding BrowseDownloadPathCommand}" 
-                                Height="34" Padding="14,0" FontSize="12"
+                                 FontSize="12.5" Height="32" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,8,0"/>
+                        <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowseDownloadPathCommand}" 
+                                Height="32" Padding="12,0" FontSize="12"
                                 Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand"/>
                     </Grid>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="150"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="150"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         
-                        <TextBlock Grid.Column="0" Text="Max Retries:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Text="{Binding Settings.MaxRetries, UpdateSourceTrigger=PropertyChanged}" Width="70" Height="30" FontSize="13" VerticalContentAlignment="Center"/>
+                        <TextBlock Grid.Column="0" Text="Max retries" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.MaxRetries, UpdateSourceTrigger=PropertyChanged}" Width="64" Height="30" FontSize="12.5" VerticalContentAlignment="Center"/>
 
-                        <TextBlock Grid.Column="3" Text="Concurrent Downloads:" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="4" Text="{Binding Settings.MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}" Width="70" Height="30" FontSize="13" VerticalContentAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="Concurrent downloads" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="4" Text="{Binding Settings.MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}" Width="64" Height="30" FontSize="12.5" VerticalContentAlignment="Center"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- Video & Audio Metadata Preferences Card -->
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,20">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="Post-Processing &amp; Embedding" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Post-processing and tags" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <WrapPanel Margin="0,0,0,0">
-                        <CheckBox Content="Embed Metadata (Title, Artist, Tags)" IsChecked="{Binding Settings.EmbedMetadata}" FontSize="13" Margin="0,0,24,12"/>
-                        <CheckBox Content="Embed Thumbnail" IsChecked="{Binding Settings.EmbedThumbnail}" FontSize="13" Margin="0,0,24,12"/>
-                        <CheckBox Content="Download Subtitles" IsChecked="{Binding Settings.DownloadSubtitles}" FontSize="13" Margin="0,0,24,12"/>
-                        <CheckBox Content="Embed Subtitles into Video" IsChecked="{Binding Settings.EmbedSubtitles}" FontSize="13" Margin="0,0,24,12"/>
+                        <CheckBox Content="Embed metadata (title, artist, tags)" IsChecked="{Binding Settings.EmbedMetadata}" FontSize="12.5" Margin="0,0,24,12"/>
+                        <CheckBox Content="Embed thumbnail" IsChecked="{Binding Settings.EmbedThumbnail}" FontSize="12.5" Margin="0,0,24,12"/>
+                        <CheckBox Content="Download subtitles" IsChecked="{Binding Settings.DownloadSubtitles}" FontSize="12.5" Margin="0,0,24,12"/>
+                        <CheckBox Content="Embed subtitles into video" IsChecked="{Binding Settings.EmbedSubtitles}" FontSize="12.5" Margin="0,0,24,12"/>
                     </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Network, Proxy & Geo-Restriction Card -->
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="&#xE909;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Network and geo-restriction" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Proxy URL" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.Proxy, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="12.5" Height="32" Padding="8,0" VerticalContentAlignment="Center"
+                                 ToolTip="Supports HTTP/HTTPS/SOCKS5 e.g. socks5://127.0.0.1:9050 for Tor"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="32"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" Content="Bypass geo-restriction" IsChecked="{Binding Settings.GeoBypass}" FontSize="12.5" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="Country code (optional)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="4" Text="{Binding Settings.GeoBypassCountry, UpdateSourceTrigger=PropertyChanged}" Width="64" Height="30" FontSize="12.5" VerticalContentAlignment="Center" ToolTip="Two-letter ISO country code e.g. US"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Authentication & Browser Cookies Card -->
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20" Margin="0,0,0,20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="&#xE72E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Authentication and session cookies" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Default browser session" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableBrowserCookies}" SelectedItem="{Binding Settings.BrowserCookies}" Height="30" FontSize="12.5" VerticalContentAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" Content="Use .netrc auth" IsChecked="{Binding Settings.UseNetrc}" FontSize="12.5" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Account username" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.Username, UpdateSourceTrigger=PropertyChanged}" FontSize="12.5" Height="30" Padding="8,0" VerticalContentAlignment="Center"/>
+
+                        <TextBlock Grid.Column="3" Text="Password" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="4" Text="{Binding Settings.Password, UpdateSourceTrigger=PropertyChanged}" FontSize="12.5" Height="30" Padding="8,0" VerticalContentAlignment="Center"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Two-factor code (2FA)" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.TwoFactor, UpdateSourceTrigger=PropertyChanged}" FontSize="12.5" Height="30" Padding="8,0" VerticalContentAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Automation, SponsorBlock & Plugins Card -->
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="&#xE777;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource PrimaryLightBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="Automation, naming and plugins" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Output naming template" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.OutputTemplate, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="12.5" Height="32" Padding="8,0" VerticalContentAlignment="Center"
+                                 ToolTip="yt-dlp template string e.g. %(uploader)s/%(title)s [%(id)s].%(ext)s"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" Content="Enable SponsorBlock" IsChecked="{Binding Settings.SponsorBlockEnabled}" FontSize="12.5" VerticalAlignment="Center" ToolTip="Auto-remove sponsors globally"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Plugins directory" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.PluginDirs, UpdateSourceTrigger=PropertyChanged}" 
+                                 FontSize="12.5" Height="32" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,8,0"
+                                 ToolTip="Directory containing custom yt-dlp plugins/extractors"/>
+                        <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowsePluginDirsCommand}" Height="32" Padding="12,0" FontSize="12"
+                                Background="{DynamicResource Surface2Brush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </StackPanel>

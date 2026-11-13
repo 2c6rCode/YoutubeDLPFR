@@ -5,30 +5,31 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:YtDlpGui.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid>
-        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+             d:DesignHeight="600" d:DesignWidth="840"
+             FontFamily="Segoe UI, -apple-system, BlinkMacSystemFont">
+    <Grid Margin="24">
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,15">
+                <Border Grid.Row="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,12">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Download History" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                            <Border Background="{DynamicResource SuccessBrush}" CornerRadius="10" Padding="8,2" Margin="0,0,8,0">
-                                <TextBlock Text="{Binding TotalCompleted, StringFormat='{}{0} completed'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Download history" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding TotalCompleted, StringFormat='{}{0} completed'}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource SuccessBrush}"/>
                             </Border>
-                            <Border Background="{DynamicResource ErrorBrush}" CornerRadius="10" Padding="8,2">
-                                <TextBlock Text="{Binding TotalFailed, StringFormat='{}{0} failed'}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="{Binding TotalFailed, StringFormat='{}{0} failed'}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource ErrorBrush}"/>
                             </Border>
                         </StackPanel>
 
-                        <Button Content="Clear History" Command="{Binding ClearHistoryCommand}" 
-                                HorizontalAlignment="Right" Padding="12,4" Height="30"
-                                Background="{DynamicResource SurfaceHoverBrush}"
+                        <Button Content="Clear history" Command="{Binding ClearHistoryCommand}" 
+                                HorizontalAlignment="Right" Padding="12,0" Height="28" FontSize="12"
+                                Background="{DynamicResource Surface2Brush}"
                                 Foreground="{DynamicResource TextPrimaryBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}"
                                 Cursor="Hand"/>
@@ -37,7 +38,7 @@
                 
                 <!-- History Items -->
                 <ListBox Grid.Row="1" ItemsSource="{Binding HistoryItems}" SelectedItem="{Binding SelectedItem}"
-                         Background="Transparent" BorderThickness="0" Margin="10"
+                         Background="Transparent" BorderThickness="0" Margin="12"
                          Visibility="{Binding HasHistory, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
@@ -57,7 +58,7 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Border Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -66,33 +67,42 @@
                                     </Grid.ColumnDefinitions>
                                     
                                     <!-- Thumbnail -->
-                                    <Border Grid.Column="0" Width="110" Height="62" CornerRadius="4" Background="{DynamicResource BackgroundBrush}" Margin="0,0,12,0" ClipToBounds="True">
+                                    <Border Grid.Column="0" Width="110" Height="62" CornerRadius="6" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,12,0" ClipToBounds="True">
                                         <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill"/>
                                     </Border>
 
                                     <!-- Info -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,4"/>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                            <Border Background="{Binding Status, Converter={StaticResource DownloadStatusToColorConverter}}" CornerRadius="3" Padding="6,1.5" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Status}" FontSize="10.5" FontWeight="SemiBold" Foreground="White"/>
                                             </Border>
-                                            <TextBlock Text="{Binding FormattedDownloaded, StringFormat='Size: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding CompletedAt, StringFormat='Completed: {0:g}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding FormattedDownloaded, StringFormat='Size: {0}'}" FontFamily="Consolas, Segoe UI" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding CompletedAt, StringFormat='Completed: {0:g}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="11.5" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}" FontSize="11.5" TextTrimming="CharacterEllipsis"
                                                    Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     </StackPanel>
 
                                     <!-- Actions -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <Button Content="📁 Open" Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Height="28" Padding="8,0" Margin="0,0,5,0" Cursor="Hand"/>
+                                        <Button Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="&#xED25;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Open" FontSize="12" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
                                         <Button Content="Retry" Command="{Binding DataContext.RetrySelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
                                                 Visibility="{Binding CanRetry, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Height="28" Padding="8,0" Margin="0,0,5,0" Cursor="Hand"/>
-                                        <Button Content="✕" Command="{Binding DataContext.RemoveSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" Height="28" Width="28" Padding="0" Cursor="Hand"/>
+                                                Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Height="28" Padding="10,0" Margin="0,0,6,0" Cursor="Hand" FontSize="12"/>
+                                        <Button Command="{Binding DataContext.RemoveSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Background="{DynamicResource SurfaceHoverBrush}" Foreground="{DynamicResource TextMutedBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                                Height="28" Width="28" Padding="0" Cursor="Hand">
+                                            <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -100,9 +110,16 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Grid.Row="1" Text="History is empty" Foreground="{DynamicResource TextMutedBrush}" 
-                           HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                           Visibility="{Binding HasHistory, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{Binding HasHistory, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <Border Width="48" Height="48" CornerRadius="24" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center" Margin="0,0,0,10">
+                        <TextBlock Text="&#xE81C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                    </Border>
+                    <TextBlock Text="History is empty" Foreground="{DynamicResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Completed downloads will appear here" Foreground="{DynamicResource TextMutedBrush}" 
+                               HorizontalAlignment="Center" FontSize="12"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

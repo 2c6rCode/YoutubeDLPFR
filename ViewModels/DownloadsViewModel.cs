@@ -63,6 +63,30 @@ public partial class DownloadsViewModel : BaseViewModel
     private ObservableCollection<string> _availableQualities = new();
 
     [ObservableProperty]
+    private bool _timeCutEnabled = false;
+
+    [ObservableProperty]
+    private string _timeCutStart = "00:00";
+
+    [ObservableProperty]
+    private string _timeCutEnd = "00:00";
+
+    [ObservableProperty]
+    private string _selectedBrowserCookies = "none";
+
+    [ObservableProperty]
+    private ObservableCollection<string> _availableBrowserCookies = new()
+    {
+        "none", "chrome", "edge", "firefox", "brave", "opera", "vivaldi"
+    };
+
+    [ObservableProperty]
+    private bool _sponsorBlockEnabled = false;
+
+    [ObservableProperty]
+    private int _detectedUrlCount = 0;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasDownloads))]
     [NotifyPropertyChangedFor(nameof(ActiveDownloads))]
     private ObservableCollection<DownloadItem> _queueItems = new();
@@ -110,6 +134,57 @@ public partial class DownloadsViewModel : BaseViewModel
     partial void OnUrlInputChanged(string value)
     {
         IsUrlValid = IsValidUrl(value);
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            var urls = value.Split(new[] { '\n', '\r', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(u => !u.StartsWith("#"))
+                .ToList();
+            DetectedUrlCount = urls.Count;
+        }
+        else
+        {
+            DetectedUrlCount = 0;
+        }
+    }
+
+    [RelayCommand]
+    private void ImportUrlFile()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Import URLs from Text File",
+                Filter = "Text Files (*.txt;*.csv;*.urls)|*.txt;*.csv;*.urls|All Files (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var content = File.ReadAllText(dialog.FileName);
+                LoadUrlsFromContent(content, Path.GetFileName(dialog.FileName));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to import URLs from file");
+            AnalysisErrorMessage = $"Failed to read file: {ex.Message}";
+        }
+    }
+
+    public void LoadUrlsFromContent(string content, string? sourceName = null)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return;
+
+        var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#"))
+            .ToList();
+
+        if (lines.Count > 0)
+        {
+            UrlInput = string.Join(Environment.NewLine, lines);
+            AnalysisErrorMessage = null;
+        }
     }
 
     partial void OnSelectedDownloadTypeChanged(DownloadType value)
@@ -281,13 +356,37 @@ public partial class DownloadsViewModel : BaseViewModel
     private DownloadOptions CreateDownloadOptions()
     {
         var qualityClean = SelectedQuality.Contains(" ") ? SelectedQuality.Split(' ')[0] : SelectedQuality;
+        
+        string? downloadSections = null;
+        if (TimeCutEnabled && !string.IsNullOrWhiteSpace(TimeCutStart))
+        {
+            var end = !string.IsNullOrWhiteSpace(TimeCutEnd) && TimeCutEnd != "00:00" ? TimeCutEnd.Trim() : "inf";
+            downloadSections = $"*{TimeCutStart.Trim()}-{end}";
+        }
+
+        var browserCookies = SelectedBrowserCookies != "none"
+            ? SelectedBrowserCookies
+            : (!string.IsNullOrEmpty(_settingsService.Settings.BrowserCookies) ? _settingsService.Settings.BrowserCookies : null);
+
         return new DownloadOptions
         {
             Type = SelectedDownloadType,
             Format = SelectedFormat,
             Quality = qualityClean,
             AudioQuality = SelectedDownloadType == DownloadType.Audio ? qualityClean : null,
-            OutputPath = OutputPath
+            OutputPath = OutputPath,
+            DownloadSections = downloadSections,
+            CookiesFromBrowser = browserCookies,
+            SponsorBlock = SponsorBlockEnabled || _settingsService.Settings.SponsorBlockEnabled,
+            OutputTemplate = _settingsService.Settings.OutputTemplate,
+            Proxy = !string.IsNullOrWhiteSpace(_settingsService.Settings.Proxy) ? _settingsService.Settings.Proxy : null,
+            GeoBypass = _settingsService.Settings.GeoBypass,
+            GeoBypassCountry = !string.IsNullOrWhiteSpace(_settingsService.Settings.GeoBypassCountry) ? _settingsService.Settings.GeoBypassCountry : null,
+            UseNetrc = _settingsService.Settings.UseNetrc,
+            Username = !string.IsNullOrWhiteSpace(_settingsService.Settings.Username) ? _settingsService.Settings.Username : null,
+            Password = !string.IsNullOrWhiteSpace(_settingsService.Settings.Password) ? _settingsService.Settings.Password : null,
+            TwoFactor = !string.IsNullOrWhiteSpace(_settingsService.Settings.TwoFactor) ? _settingsService.Settings.TwoFactor : null,
+            PluginDirs = !string.IsNullOrWhiteSpace(_settingsService.Settings.PluginDirs) ? _settingsService.Settings.PluginDirs : null
         };
     }
 
@@ -314,6 +413,33 @@ public partial class DownloadsViewModel : BaseViewModel
         UrlInput = string.Empty;
         ClearInspection();
         RefreshQueue();
+    }
+
+    [RelayCommand]
+    private void PasteFromClipboard()
+    {
+        try
+        {
+            if (System.Windows.Clipboard.ContainsText())
+            {
+                var text = System.Windows.Clipboard.GetText()?.Trim();
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    UrlInput = text;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read clipboard text");
+        }
+    }
+
+    [RelayCommand]
+    private void ClearUrl()
+    {
+        UrlInput = string.Empty;
+        ClearInspection();
     }
 
     [RelayCommand(CanExecute = nameof(CanDownload))]

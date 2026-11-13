@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.IO;
 using YtDlpGui.Models;
 using YtDlpGui.Services;
@@ -30,6 +31,25 @@ public partial class SettingsViewModel : BaseViewModel
 
     [ObservableProperty]
     private string _updateStatus = string.Empty;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _availableBrowserCookies = new()
+    {
+        "none", "chrome", "edge", "firefox", "brave", "opera", "vivaldi"
+    };
+
+    [RelayCommand]
+    private void BrowsePluginDirs()
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Select yt-dlp Plugins Directory"
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            Settings.PluginDirs = dialog.FolderName;
+        }
+    }
 
     public SettingsViewModel(
         ILogger<SettingsViewModel> logger,
